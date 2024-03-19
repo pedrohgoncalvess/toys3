@@ -21,4 +21,6 @@ object configs {
     }
   }
 
+  val bucketsPath:String = s"${projectPath()}\\toys3\\buckets"
+
 }
