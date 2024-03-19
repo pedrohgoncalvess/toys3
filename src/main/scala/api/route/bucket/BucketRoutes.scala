@@ -5,16 +5,12 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import utils.configs.projectPath
-import java.io.File
-import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import api.json
 import api.json.Bucket
-
+import api.services.buckets._
 
 class BucketRoutes extends Directives with json.BucketJsonSupport {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   val rootDir: String = projectPath()
 
@@ -22,26 +18,46 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
     concat(
         post {
           entity(as[json.Bucket]) { bucket =>
-          val dir = File(s"$rootDir\\toys3\\buckets\\${bucket.name}")
-          if (dir.exists()) {
-            complete(StatusCodes.Conflict, s"Bucket ${bucket.name} already exists.")
-          } else {
-            val createDir:Future[Unit] = Future {
-              dir.mkdir()
-            }
-            onComplete(createDir){
-              case Success(_) =>
-                complete(StatusCodes.OK, s"Bucket ${bucket.name} created.")
-              case Failure(exception) =>
-                complete(StatusCodes.InternalServerError, exception.getMessage)
-            }
+          val bucketExist = checkBucket(bucket.name)
+          onComplete(bucketExist) {
+            case Success(value) =>
+             if (value) {
+               complete(StatusCodes.Conflict, s"Bucket ${bucket.name} already exists.")
+             } else {
+               onComplete(createBucket(bucket.name)) {
+                 case Success(_) => complete(StatusCodes.OK)
+                 case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+               }
+             }
           }
         }
       },
       get {
-        val rawBuckets = File(s"$rootDir\\toys3\\buckets").listFiles()
-        val buckets = rawBuckets.map(bucket => Bucket(name=bucket.getName))
-        complete(StatusCodes.OK, buckets)
+        onComplete(listBuckets) {
+          case Success(buckets) =>
+            complete(StatusCodes.OK, buckets)
+          case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+        }
+      },
+      delete {
+        parameter("name".as[String], "permanent".as[Boolean]) { (bucket, delPermanent) =>
+          onComplete(checkBucket(bucket)) {
+            case Success(value) =>
+              if (value)
+                if (delPermanent)
+                  onComplete(deleteBucket(bucket)) {
+                    case Success(_) => complete(StatusCodes.OK)
+                    case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+                  }
+                else 
+                  onComplete(softDeleteBucket(bucket)) {
+                    case Success(_) => complete(StatusCodes.OK)
+                    case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+                  }
+              else
+                complete(StatusCodes.Conflict, s"Bucket $bucket not exists.")
+          }
+        }
       }
     )
   }
