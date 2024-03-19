@@ -20,7 +20,7 @@ import scala.io.StdIn
 
   val bindingFuture = Http().newServerAt("0.0.0.0", 8080).bind(Directives.concat(bucket.route, file.route))
 
-  println(s"Server now online at port 8080.")
+  println(s"Server online at port 8080.")
   StdIn.readLine()
   bindingFuture
     .flatMap(_.unbind())
