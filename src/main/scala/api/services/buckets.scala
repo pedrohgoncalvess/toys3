@@ -3,12 +3,10 @@ package api.services
 
 import utils.configs.bucketsPath
 import api.json.{Bucket, Buckets}
-
 import org.json4s.{JInt, JString}
 import org.json4s.JsonAST.JObject
 import org.json4s.*
 import org.json4s.native.JsonMethods.*
-
 import scala.concurrent.Future
 import java.io.{File, FileWriter}
 import scala.io.Source
