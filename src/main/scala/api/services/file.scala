@@ -1,45 +1,69 @@
 package pedro.goncalves
 package api.services
 
-import java.io.File
-import api.services.buckets.bucketsDir
 
-import java.sql.Connection
-import java.sql.DriverManager
-import scala.concurrent.Future;
+import java.sql.{Connection, DriverManager, ResultSet}
 
-object file extends App {
+object file extends App:
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  val conn: Connection = DriverManager.getConnection("jdbc:duckdb:")
 
-  def createRepository(bucketName:String, fileName: String): Unit =
-      File(s"$bucketsDir\\$bucketName\\$fileName").mkdir()
-
-  def deleteRepository(bucketName:String, repositoryName:String): Future[Unit] =
-    Future {
-      val repository = File(s"$bucketsDir\\$bucketName\\$repositoryName")
-      repository.listFiles().foreach(_.delete())
-      repository.delete()
-    }
-
-  Class.forName("org.duckdb.DuckDBDriver")
-
-  val conn:Connection = DriverManager.getConnection("jdbc:duckdb:");
-
-  def loadCsvFile(csvPath: String, duckConn:Connection): Unit =
+  def loadCsvFile(csvPath: String, duckConn: Connection): Connection =
     val loadFile =
       s"""
-        | CREATE TABLE main AS
-        | SELECT * FROM read_csv('$csvPath');""".stripMargin
+         | CREATE TABLE csv_data AS
+         | SELECT * FROM read_csv('$csvPath');""".stripMargin
 
     val statement = duckConn.createStatement()
     statement.execute(loadFile)
 
-    val results = statement.executeQuery("SELECT * FROM main")
-    while(results.next()) {
-      println(results.getString(1))
-    }
-    duckConn.close()
+    //Total columns
+    val countColumnsStmt = statement.executeQuery(
+      """SELECT COUNT(*) AS num_columns
+        |FROM information_schema.columns
+        | WHERE table_schema='main' AND table_name='csv_data';"""
+        .stripMargin
+    )
+    countColumnsStmt.next()
+    val numColumns = countColumnsStmt.getInt("num_columns")
 
-  //loadCsvFile("C:\\Users\\Pedro\\Desktop\\WorkSpace\\Projetos\\toys3\\toys3\\buckets\\balde\\example.csv", conn)
-}
+    //Total rows
+    val totalLinesStmt = statement.executeQuery(
+    """SELECT COUNT(*) AS total FROM 'csv_data';"""
+      .stripMargin
+    )
+    totalLinesStmt.next()
+    val numRows = totalLinesStmt.getInt("total")
+
+
+    //Schema data
+    val columnsType = statement.executeQuery(
+    """SELECT column_name, data_type
+        | FROM information_schema.columns
+        | WHERE table_schema='main' AND table_name='csv_data';"""
+      .stripMargin
+    )
+
+    val lazyRows = LazyList.continually(columnsType).takeWhile(_.next())
+    val schemaInformation = lazyRows.map(row =>
+    Map(row.getString("column_name") -> row.getString("data_type"))
+    ).toArray
+
+    duckConn
+
+  def teste(duckConn:Connection): Unit =
+    val statement = duckConn.createStatement()
+    val countColumnsStmt = statement.executeQuery(
+      """SELECT COUNT(*) AS num_columns
+        |FROM information_schema.columns
+        | WHERE table_schema='main' AND table_name='csv_data';"""
+        .stripMargin
+    )
+    countColumnsStmt.next()
+    val numColumns = countColumnsStmt.getInt("num_columns")
+    println(numColumns)
+
+  loadCsvFile("C:\\Users\\Pedro\\Desktop\\WorkSpace\\Projetos\\toys3\\toys3\\buckets\\balde\\example\\example.csv", conn)
+  teste(conn)
+
+
