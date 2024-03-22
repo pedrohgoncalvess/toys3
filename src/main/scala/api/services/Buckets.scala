@@ -2,83 +2,57 @@ package pedro.goncalves
 package api.services
 
 import utils.configs.bucketsPath
-import api.json.{Bucket, Buckets}
+import api.json
 import org.json4s.{JInt, JString}
 import org.json4s.JsonAST.JObject
 import org.json4s.*
 import org.json4s.native.JsonMethods.*
 import scala.concurrent.Future
-import java.io.{File, FileWriter}
-import scala.io.Source
-import scala.util.Using
-import scala.util.{Success, Failure}
+import java.io.File
+import api.services.objects.Metadata
 
+import scala.concurrent.ExecutionContext.Implicits.global
 
-object buckets {
+case class Buckets(
+             bucketName:String
+             ):
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  private val metadataBucket = new Metadata(bucket=this.bucketName)
   
-  val bucketsDir = bucketsPath
   
-  def checkBucket(bucketName: String): Future[Boolean] =
+  def check: Future[Boolean] =
     Future {
-      File(s"$bucketsDir\\$bucketName").exists()
+      File(s"$bucketsPath\\$bucketName").exists()
     }
 
-  private def createMetadataBucket(bucketName: String): Future[Unit] =
-    Future {
-      val json = JObject(
-        "created_at" -> JString(java.time.LocalDateTime.now().toString),
-        "created_by" -> JString("admin"),
-        "objects" -> JInt(0),
-        "active" -> JBool(true)
-      )
-      val jsonString = compact(render(json))
-      val jsonWriter = new FileWriter(s"$bucketsDir\\$bucketName\\_metadata.json")
-      jsonWriter.write(jsonString)
-      jsonWriter.close()
-    }
+  private def createMetadata: Future[Unit] =
+    val json = JObject(
+      "created_at" -> JString(java.time.LocalDateTime.now().toString),
+      "created_by" -> JString("admin"),
+      "objects" -> JInt(0),
+      "active" -> JBool(true)
+    )
+    metadataBucket.create(json)
     
-  def createBucket(bucketName: String): Future[Unit] =
+  def create: Future[Unit] =
     Future {
-      File(s"$bucketsDir\\$bucketName").mkdir()
-      createMetadataBucket(bucketName)
+      File(s"$bucketsPath\\${this.bucketName}").mkdir()
+      this.createMetadata
     }
 
-  def softDeleteBucket(bucketName: String): Future[Unit] =
+  def softDelete: Future[Unit] =
     Future {
-      val filePath = s"$bucketsDir\\$bucketName\\_metadata.json"
-      val jsonStringOpr = Using(Source.fromFile(filePath)) {source => source.mkString}
-      val jsonString:String = jsonStringOpr match {
-        case Success(content:String) => content
-        case Failure(exception) => throw new Exception(exception.getMessage)
-      }
-      val json = parse(jsonString)
-
-      val updatedJson = json match {
-        case JObject(fields) =>
-          JObject(fields.map {
-            case (name, value) if name == "active" => (name, JBool(false))
-            case otherField => otherField
-          })
-      }
-      val updatedJsonString = compact(render(updatedJson))
-      val jsonWriter = new FileWriter(filePath)
-      jsonWriter.write(updatedJsonString)
-      jsonWriter.close()
+      metadataBucket.softDelete
     }
-
-    
-  def deleteBucket(bucketName: String): Future[Unit] =
+  
+  def delete: Future[Unit] =
     Future {
-      val bucket = File(s"$bucketsDir\\$bucketName")
-      bucket.listFiles().foreach(_.delete())
+      val bucket = File(s"$bucketsPath\\${this.bucketName}")
+      bucket.listFiles().foreach(_.delete)
       bucket.delete()
     }
     
-  def listBuckets: Future[Buckets] =
-    Future {
-      Buckets(File(bucketsDir).listFiles().map(bucket => Bucket(name = bucket.getName)))
-    }
-
-}
+def listBuckets: Future[json.Buckets] =
+  Future {
+    json.Buckets(File(bucketsPath).listFiles.map(bucket => json.Bucket(name = bucket.getName)))
+  }

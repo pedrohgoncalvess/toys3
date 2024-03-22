@@ -7,9 +7,8 @@ import akka.http.scaladsl.model.StatusCodes
 import utils.configs.projectPath
 import scala.util.{Failure, Success}
 import api.json
-import api.json.Bucket
-import api.services.buckets._
-
+import api.json
+import api.services
 class BucketRoutes extends Directives with json.BucketJsonSupport {
 
   val rootDir: String = projectPath()
@@ -18,13 +17,16 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
     concat(
         post {
           entity(as[json.Bucket]) { bucket =>
-          val bucketExist = checkBucket(bucket.name)
-          onComplete(bucketExist) {
+          val bucketOperations = new services.Buckets(bucket.name)
+          
+          val bucketExist = bucketOperations.check
+          
+            onComplete(bucketExist) {
             case Success(value) =>
              if (value) {
                complete(StatusCodes.Conflict, s"Bucket ${bucket.name} already exists.")
              } else {
-               onComplete(createBucket(bucket.name)) {
+               onComplete(bucketOperations.create) {
                  case Success(_) => complete(StatusCodes.OK)
                  case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                }
@@ -33,7 +35,7 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
         }
       },
       get {
-        onComplete(listBuckets) {
+        onComplete(services.listBuckets) {
           case Success(buckets) =>
             complete(StatusCodes.OK, buckets)
           case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
@@ -41,16 +43,17 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
       },
       delete {
         parameter("name".as[String], "permanent".as[Boolean]) { (bucket, delPermanent) =>
-          onComplete(checkBucket(bucket)) {
+          val bucketOperations = new services.Buckets(bucket)
+          onComplete(bucketOperations.check) {
             case Success(value) =>
               if (value)
                 if (delPermanent)
-                  onComplete(deleteBucket(bucket)) {
+                  onComplete(bucketOperations.delete) {
                     case Success(_) => complete(StatusCodes.OK)
                     case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                   }
                 else 
-                  onComplete(softDeleteBucket(bucket)) {
+                  onComplete(bucketOperations.softDelete) {
                     case Success(_) => complete(StatusCodes.OK)
                     case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                   }
