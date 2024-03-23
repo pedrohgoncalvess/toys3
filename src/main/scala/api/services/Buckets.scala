@@ -13,9 +13,9 @@ import api.services.objects.Metadata
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class Buckets(
+case class Buckets (
              bucketName:String
-             ):
+                   ):
 
   private val metadataBucket = new Metadata(bucket=this.bucketName)
   
