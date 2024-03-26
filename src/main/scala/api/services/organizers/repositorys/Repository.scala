@@ -13,7 +13,7 @@ import scala.util.{Failure, Success}
 case class Repository(
                        bucket:Buckets,
                        repositoryName:String
-                ):
+                     ):
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -36,3 +36,7 @@ case class Repository(
       repository.listFiles().foreach(_.delete())
       repository.delete()
     }
+
+  def check: Future[Boolean] =
+    Future:
+      File(repositoryPath).exists()
