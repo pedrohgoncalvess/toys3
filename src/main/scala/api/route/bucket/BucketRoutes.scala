@@ -7,9 +7,11 @@ import akka.http.scaladsl.model.StatusCodes
 import utils.configs.projectPath
 import scala.util.{Failure, Success}
 import api.json
-import api.json
 import api.services
-class BucketRoutes extends Directives with json.BucketJsonSupport {
+import api.services.organizers.buckets.{Buckets, listBuckets}
+
+
+class BucketRoutes extends Directives with json.BucketJsonSupport:
 
   val rootDir: String = projectPath()
 
@@ -17,7 +19,7 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
     concat(
         post {
           entity(as[json.Bucket]) { bucket =>
-          val bucketOperations = new services.Buckets(bucket.name)
+          val bucketOperations = Buckets(bucket.name)
           
           val bucketExist = bucketOperations.check
           
@@ -35,7 +37,7 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
         }
       },
       get {
-        onComplete(services.listBuckets) {
+        onComplete(listBuckets) {
           case Success(buckets) =>
             complete(StatusCodes.OK, buckets)
           case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
@@ -43,17 +45,17 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
       },
       delete {
         parameter("name".as[String], "permanent".as[Boolean]) { (bucket, delPermanent) =>
-          val bucketOperations = new services.Buckets(bucket)
+          val bucketOperations = Buckets(bucket)
           onComplete(bucketOperations.check) {
             case Success(value) =>
               if (value)
                 if (delPermanent)
-                  onComplete(bucketOperations.delete) {
+                  onComplete(bucketOperations.exclude) {
                     case Success(_) => complete(StatusCodes.OK)
                     case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                   }
                 else 
-                  onComplete(bucketOperations.softDelete) {
+                  onComplete(bucketOperations._disability) {
                     case Success(_) => complete(StatusCodes.OK)
                     case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                   }
@@ -64,6 +66,5 @@ class BucketRoutes extends Directives with json.BucketJsonSupport {
       }
     )
   }
-}
 
 
