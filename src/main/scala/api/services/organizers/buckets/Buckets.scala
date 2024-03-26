@@ -1,30 +1,46 @@
 package pedro.goncalves
-package api.services
+package api.services.organizers.buckets
 
-import utils.configs.bucketsPath
 import api.json
-import org.json4s.{JInt, JString}
-import org.json4s.JsonAST.JObject
-import org.json4s.*
-import org.json4s.native.JsonMethods.*
-import scala.concurrent.Future
-import java.io.File
 import api.services.objects.Metadata
+import utils.configs.bucketsPath
 
+import org.json4s.JsonAST.JObject
+import org.json4s.native.JsonMethods.*
+import org.json4s.*
+
+import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
+/**
+  * Class that represents bucket
+  *
+  * @param bucketName the name of bucket
+  *
+  */
 case class Buckets (
              bucketName:String
                    ):
 
-  private val metadataBucket = new Metadata(bucket=this.bucketName)
-  
-  
+  private val metadataBucket = Metadata(bucket=this.bucketName)
+
+  /**
+   * A method that checks to see if that bucket exists
+   *
+   * @return true for exist and false for non exists
+   */
   def check: Future[Boolean] =
     Future {
       File(s"$bucketsPath\\$bucketName").exists()
     }
 
+
+  /**
+   * private method used only by the create method that creates the bucket
+   * 
+   * @return future unit with the result of the operation
+   */
   private def createMetadata: Future[Unit] =
     val json = JObject(
       "created_at" -> JString(java.time.LocalDateTime.now().toString),
@@ -41,9 +57,8 @@ case class Buckets (
     }
 
   def softDelete: Future[Unit] =
-    Future {
-      metadataBucket.softDelete
-    }
+    metadataBucket.softDelete
+
   
   def delete: Future[Unit] =
     Future {

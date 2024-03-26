@@ -1,16 +1,18 @@
 package pedro.goncalves
-package api.services.objects
+package api.services.organizers.repositorys
+
+import api.services
+import api.services.organizers.buckets.Buckets
+import utils.configs.bucketsPath
 
 import java.io.File
-import utils.configs.bucketsPath
 import scala.concurrent.Future
-import api.services
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 
-class Repository(
-                bucket:services.Buckets,
-                repository:String
+case class Repository(
+                       bucket:Buckets,
+                       repositoryName:String
                 ):
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,13 +24,15 @@ class Repository(
       case Success(_) =>
       case Failure(exception) => throw exception
     }
+  
+  val repositoryPath = s"$bucketsPath\\${bucket.bucketName}\\$repositoryName"
 
   def create: Unit =
-    File(s"$bucketsPath\\${bucket.bucketName}\\$repository").mkdir()
+    File(repositoryPath).mkdir()
 
   def delete(bucketName:String, repositoryName:String): Future[Unit] =
     Future {
-      val repository = File(s"$bucketsPath\\$bucketName\\$repositoryName")
+      val repository = File(repositoryPath)
       repository.listFiles().foreach(_.delete())
       repository.delete()
     }
