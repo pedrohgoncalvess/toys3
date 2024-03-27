@@ -6,14 +6,15 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
+import api.route
 
 
 @main def main() =
-  import api.route.bucket.BucketRoutes
-  import api.route.file.FileRoutes
+  import api.route.bucket.main
+  import api.route.file.main
 
-  val bucket = new BucketRoutes
-  val file = new FileRoutes
+  val bucket = new route.bucket.main
+  val file = new route.file.main
   
   implicit val system: ActorSystem[Any] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
