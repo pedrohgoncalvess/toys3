@@ -125,6 +125,7 @@ case class CSVFile(
     val metadata: Future[JObject] = this._content
 
     metadata.flatMap { value =>
+      duckConn.close()
       this._create(value)
     }
 
