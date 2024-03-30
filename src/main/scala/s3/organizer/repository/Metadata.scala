@@ -12,7 +12,8 @@ import scala.concurrent.Future
 
 class Metadata(
                 bucket:Bucket,
-                repositoryName:String
+                repositoryName:String,
+                versioned:Boolean
               ) extends metadata.Metadata {
 
   override val metadataPath:String = s"$bucketsPath\\${bucket.bucketName}\\$repositoryName\\$metadataFileName"
@@ -26,6 +27,7 @@ class Metadata(
         "created_by" -> JString("admin"),
         "objects" -> JInt(0),
         "active" -> JBool(true),
+        "versioned" -> JBool(versioned)
       )
 
   override def _generate: Future[Unit] =
