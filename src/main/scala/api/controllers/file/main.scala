@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.route.file
+package api.controllers.file
 
 
 import akka.http.scaladsl.server.Directives
@@ -48,7 +48,7 @@ class main extends Directives:
     concat(
         post {
           parameter(
-            "bucket".as[String], 
+            "bucket".as[String],
             "versioned".as[Boolean].optional,
             "repository".as[String].optional,
             "version".as[Float].optional
