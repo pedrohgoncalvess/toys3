@@ -2,7 +2,7 @@ package pedro.goncalves
 package s3.organizer.bucket
 
 
-import api.json
+import api.models
 import utils.configs.bucketsPath
 import org.json4s.native.JsonMethods.*
 import org.json4s.*
@@ -49,10 +49,9 @@ case class Bucket (
   def exclude: Future[Unit] =
     Future {
       val bucket = File(organizerPath)
-      val bucketFiles = bucket.listFiles().filter(file => file.isFile)
       val bucketRepositories = bucket.listFiles().filter(dir => !dir.isFile)
-      bucketFiles.foreach(_.delete)
       bucketRepositories.foreach(_.listFiles().foreach(_.delete))
+      bucket.listFiles.foreach(_.delete)
       bucket.delete()
     }
 
@@ -64,11 +63,11 @@ case class Bucket (
  * 
  * @return list of buckets objects
  */
-def listBuckets: Future[json.Buckets] =
+def listBuckets: Future[models.Buckets] =
   Future {
-    json.Buckets(File(bucketsPath)
+    models.Buckets(File(bucketsPath)
       .listFiles
-      .map(bucket => json.Bucket(
+      .map(bucket => models.Bucket(
         name = bucket.getName
         )
       )

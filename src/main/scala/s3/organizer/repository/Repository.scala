@@ -7,29 +7,34 @@ import utils.configs.bucketsPath
 import s3.organizer.bucket.Bucket
 import java.io.File
 import scala.concurrent.Future
+import scala.util.{Success, Failure}
 
 
 case class Repository(
                        bucket:Bucket,
-                       repositoryName:String
+                       repositoryName:String,
+                       versioned:Boolean=false
                        )
   extends Metadata(
     bucket=bucket,
-    repositoryName=repositoryName
+    repositoryName=repositoryName,
+    versioned=versioned
   )
     with Organizer:
 
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
-  if (!bucket.check)
-    throw new Exception(s"Bucket ${bucket.bucketName} not exists.")
   
   override val organizerPath = s"$bucketsPath\\${bucket.bucketName}\\$repositoryName"
 
   override def create: Future[Unit] =
     Future:
-      File(organizerPath).mkdir()
+      bucket.addRepository(repositoryName).onComplete:
+        case Success(_) => 
+          File(organizerPath).mkdir()
+          _generate
+        case Failure(exception) => throw exception
+
 
   override def exclude: Future[Unit] =
     Future {
@@ -45,9 +50,8 @@ case class Repository(
     else
       dirs.map(_.getName.replace("v","").toFloat).max
   
-  def createVersion(lastVersion:Float): Future[Unit] =
-    Future:
-      File(s"$organizerPath\\v${lastVersion+1}").mkdir()
+  def createVersion(lastVersion:Float): Unit =
+    File(s"$organizerPath\\v${lastVersion+1}").mkdir()
 
   override def check: Boolean =
       File(organizerPath).exists()

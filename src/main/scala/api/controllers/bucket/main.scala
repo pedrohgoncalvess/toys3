@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.route.bucket
+package api.controllers.bucket
 
 
 import akka.http.scaladsl.server.Directives
@@ -7,18 +7,18 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import utils.configs.projectPath
 import scala.util.{Failure, Success}
-import api.json
+import api.models
 import s3.organizer.bucket.{listBuckets, Bucket}
 
 
-class main extends Directives with json.BucketJsonSupport:
+class main extends Directives with models.BucketJsonSupport:
 
   val rootDir: String = projectPath()
 
   val route: Route = pathPrefix("bucket") {
     concat(
         post {
-          entity(as[json.Bucket]) { bucket =>
+          entity(as[models.Bucket]) { bucket =>
           val bucketOperations = Bucket(bucket.name)
 
           if (bucketOperations.check)
