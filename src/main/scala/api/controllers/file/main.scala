@@ -6,12 +6,10 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.directives.FileInfo
-
 import java.io.File
 import s3.organizer.bucket.Bucket
 import s3.organizer.repository.Repository
 import s3.structured.CSVFile
-
 import scala.util.{Failure, Success}
 import api.services.File.{completeStorage, fileDestination}
 import api.models.FileStorage
@@ -22,6 +20,8 @@ import api.exceptions.repository.RepositoryNotExists
 
 
 class main extends Directives:
+  
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val route: Route = pathPrefix("file") {
     concat(

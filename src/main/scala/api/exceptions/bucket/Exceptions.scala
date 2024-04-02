@@ -1,4 +1,6 @@
 package pedro.goncalves
 package api.exceptions.bucket
 
-case class BucketNotExists(bucketName:String) extends Exception
+case class BucketNotExists(name:String) extends Exception
+case class BucketExists(name:String) extends Exception
+case class UUIdBucketNotExists(id:String) extends Exception
