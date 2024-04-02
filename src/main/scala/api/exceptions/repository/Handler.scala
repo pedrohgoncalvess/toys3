@@ -12,7 +12,7 @@ implicit def repositoryExceptionHandler: ExceptionHandler =
   ExceptionHandler:
     case e: BucketNotExists =>
       extractUri { _ =>
-        complete(StatusCodes.NotFound, s"Bucket ${e.bucketName} not exists.")
+        complete(StatusCodes.NotFound, s"Bucket ${e.name} not exists.")
       }
     case e: RepositoryExists =>
       extractUri { _ =>

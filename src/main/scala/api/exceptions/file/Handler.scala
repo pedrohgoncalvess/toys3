@@ -20,5 +20,5 @@ implicit def fileExceptionHandler: ExceptionHandler =
 
     case e: BucketNotExists =>
       extractUri { _ =>
-        complete(StatusCodes.NotFound, s"Bucket ${e.bucketName} not exists.")
+        complete(StatusCodes.NotFound, s"Bucket ${e.name} not exists.")
       }
