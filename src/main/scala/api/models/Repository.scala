@@ -10,8 +10,13 @@ case class Repository(
                      versioned: Boolean,
                      )
 
+case class Repositories(
+                       repositories: Array[Repository]
+                       )
+
 trait RepositoryJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit val repositoryFormat: RootJsonFormat[Repository] = jsonFormat3(Repository.apply)
+  implicit val repositoriesFormat: RootJsonFormat[Repositories] = jsonFormat1(Repositories.apply)
   
 }

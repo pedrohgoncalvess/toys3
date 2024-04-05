@@ -55,7 +55,7 @@ class main extends Directives:
                 if (createIfNotExists)
                   repository.create
                 else
-                  throw RepositoryNotExists(repository.repositoryName)
+                  throw RepositoryNotExists(repository.name)
 
               val lastVersion = repository.lastVersion
               if (lastVersion >= treatedParameters.version)

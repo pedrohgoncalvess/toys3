@@ -2,12 +2,13 @@ package pedro.goncalves
 package s3.metadata
 
 
-import org.json4s.{JField, JValue}
+import org.json4s.{JField, JString, JValue}
 import org.json4s.JsonAST.{JBool, JObject}
 import org.json4s.native.JsonMethods.{compact, parse, render}
-
+import java.io.File
 import java.io.FileWriter
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import scala.util.Using
 import scala.util.{Failure, Success}
@@ -25,9 +26,12 @@ trait Metadata:
   
   def _generate(implicit ex: ExecutionContext): Future[Unit] =
     val content: Future[JObject] = this._content
-    content.flatMap { value =>
+    content.map { value =>
       this._create(value)
     }
+    
+  def _exists: Boolean =
+    File(metadataPath).exists
 
   def _read(implicit ex: ExecutionContext): Future[Map[String, JValue]] =
     Future:
@@ -47,8 +51,8 @@ trait Metadata:
       }
 
       jsonToMap
-
-
+      
+  
   def _create(content: JObject)(implicit ex: ExecutionContext): Future[Unit] =
     Future:
       val jsonString = compact(render(content))

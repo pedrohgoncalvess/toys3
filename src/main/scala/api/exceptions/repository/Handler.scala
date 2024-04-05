@@ -16,6 +16,10 @@ implicit def repositoryExceptionHandler: ExceptionHandler =
       }
     case e: RepositoryExists =>
       extractUri { _ =>
-        complete(StatusCodes.Conflict, s"Repository ${e.repositoryName} already exists.")
+        complete(StatusCodes.Conflict, s"Repository ${e.name} already exists.")
       }
-  
+
+    case e: DelTypeNotExists =>
+      extractUri { _ =>
+        complete(StatusCodes.NotFound, s"delete type doesn't ${e._type} exist. Options: ['permanent', 'soft']")
+      }

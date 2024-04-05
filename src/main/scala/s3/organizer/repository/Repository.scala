@@ -12,12 +12,12 @@ import scala.util.{Success, Failure}
 
 case class Repository(
                        bucket:Bucket,
-                       repositoryName:String,
+                       name:String,
                        versioned:Boolean=false
                        )
   extends Metadata(
     bucket=bucket,
-    repositoryName=repositoryName,
+    name=name,
     versioned=versioned
   )
     with Organizer:
@@ -25,11 +25,11 @@ case class Repository(
 
   import scala.concurrent.ExecutionContext.Implicits.global
   
-  override val organizerPath = s"$bucketsPath\\${bucket.bucketName}\\$repositoryName"
+  override val organizerPath = s"$bucketsPath\\${bucket.name}\\$name"
 
   override def create: Future[Unit] =
     Future:
-      bucket.addRepository(repositoryName).onComplete:
+      bucket.addRepository(name).onComplete:
         case Success(_) => 
           File(organizerPath).mkdir()
           _generate
@@ -48,7 +48,7 @@ case class Repository(
     if (dirs.isEmpty)
       0f
     else
-      dirs.map(_.getName.replace("v","").toFloat).max
+      dirs.map(_.getName.replace("v"/*v is a signature of versioned folder*/,"").toFloat).max
   
   def createVersion(lastVersion:Float): Unit =
     File(s"$organizerPath\\v${lastVersion+1}").mkdir()

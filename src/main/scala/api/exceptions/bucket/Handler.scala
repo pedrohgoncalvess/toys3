@@ -5,6 +5,7 @@ package api.exceptions.bucket
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, extractUri}
 import akka.http.scaladsl.server.ExceptionHandler
+import api.exceptions.repository.DelTypeNotExists
 
 
 implicit def bucketExceptionHandler: ExceptionHandler =
@@ -17,8 +18,7 @@ implicit def bucketExceptionHandler: ExceptionHandler =
       extractUri { _ =>
         complete(StatusCodes.Conflict, s"Bucket ${e.name} already exists.")
       }
-    case e:UUIdBucketNotExists =>
+    case e: DelTypeNotExists =>
       extractUri { _ =>
-        complete(StatusCodes.NotFound, s"UUID ${e.id} is not linked to any bucket.")
-        
+        complete(StatusCodes.NotFound, s"delete type doesn't ${e._type} exist. Options: ['permanent', 'soft']")
       }

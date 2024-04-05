@@ -6,12 +6,12 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import utils.configs.projectPath
-import api.exceptions.bucket.bucketExceptionHandler
+import api.exceptions.bucket.{BucketNotExists, bucketExceptionHandler}
 import scala.util.{Failure, Success}
 import api.models
 import s3.organizer.bucket.Bucket
-import api.services.Bucket.idNameBucket
-import api.exceptions.bucket.{BucketNotExists, UUIdBucketNotExists}
+import api.services.Bucket.jsonBuckets
+import api.exceptions.repository.DelTypeNotExists
 
 
 class main extends Directives with models.BucketJsonSupport:
@@ -38,7 +38,7 @@ class main extends Directives with models.BucketJsonSupport:
       },
       
       get {
-        onComplete(idNameBucket) {
+        onComplete(jsonBuckets) {
           case Success(buckets) =>
             complete(StatusCodes.OK, buckets)
           case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
@@ -47,26 +47,29 @@ class main extends Directives with models.BucketJsonSupport:
       
       delete {
         handleExceptions(bucketExceptionHandler) {
-          parameter("id".as[String], "permanent".as[Boolean]) { (bucketId, delPermanent) =>
-            onComplete(idNameBucket) {
+          parameter("name".as[String], "type".as[String]) { (bucketName, delType) =>
+            onComplete(jsonBuckets) {
               case Success(buckets) =>
 
-                val bucket = buckets.buckets.filter(bucket => bucket.id.get == bucketId)
+                if (delType != "permanent" && delType != "soft")
+                  throw DelTypeNotExists(delType)
+
+
+                val bucket = buckets.buckets.filter(bucket => bucket.name == bucketName)
 
                 if (bucket.isEmpty)
-                  throw UUIdBucketNotExists(bucketId)
+                  throw BucketNotExists(bucketName)
 
                 val bucketOperations = Bucket(bucket.head.name)
-                if (delPermanent)
-                  onComplete(bucketOperations.exclude) {
-                    case Success(_) => complete(StatusCodes.OK)
-                    case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
-                  }
-                else
-                  onComplete(bucketOperations._disability) {
-                    case Success(_) => complete(StatusCodes.OK)
-                    case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
-              }
+                
+                val (delOperation, typeOpr) = if delType=="permanent" then (bucketOperations.exclude, "deleted") else (bucketOperations._disability, "disabled")
+
+                onComplete(delOperation) {
+                  case Success(_) => complete(StatusCodes.OK, s"Bucket $bucketName has been $typeOpr.")
+                  case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+                }
+                
+              case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
             }
           }
         }

@@ -9,7 +9,7 @@ import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import s3.organizer.Organizer
-import scala.collection.mutable
+import s3.organizer.repository.Repository
 
 
 /**
@@ -19,18 +19,17 @@ import scala.collection.mutable
   *
   */
 case class Bucket (
-                     bucketName:String
-                   ) extends Metadata(bucketName) with Organizer:
+                     name:String
+                   ) 
+  extends Metadata(name) with Organizer:
 
-  override val organizerPath: String = s"$bucketsPath\\$bucketName"
+  override val organizerPath: String = s"$bucketsPath\\$name"
   
   def check: Boolean = File(organizerPath).exists()
   
   def create: Future[Unit] =
-    Future {
-      File(organizerPath).mkdir()
-      this._generate
-    }
+    File(organizerPath).mkdir()
+    this._generate
 
   def exclude: Future[Unit] =
     Future {
@@ -39,6 +38,18 @@ case class Bucket (
       bucketRepositories.foreach(_.listFiles().foreach(_.delete))
       bucket.listFiles.foreach(_.delete)
       bucket.delete()
+    }
+
+  def listRepositories: Future[Array[Repository]] =
+    val metadataContent: Future[Map[String, JValue]] = _read
+
+    metadataContent.map { content =>
+      content.get("repositories") match {
+        case Some(JArray(list)) => list.collect {
+          case JString(repo) => Repository(bucket=this, name=repo)
+        }.toArray
+        case _ => Array.empty[Repository]
+      }
     }
 
 
@@ -54,27 +65,3 @@ def listBuckets: Future[Array[Bucket]] =
   Future:
     val bucketsFile = File(bucketsPath).listFiles.filter(!_.isFile)
     bucketsFile.map(file => Bucket(file.getName))
-
-
-def listUUIDs: Future[Array[String]] =
-
-  listBuckets.flatMap { buckets =>
-
-    val bucketsJson: Array[Future[Array[String]]] = buckets.map { bucket =>
-      val metadataContent: Future[Map[String, JValue]] = bucket._read
-
-      metadataContent.map { metadataList =>
-        metadataList.collect {
-          case ("id", value: JString) => value.values
-        }.toArray
-      }
-    }
-
-    val bucketsJsonFuture: Future[mutable.ArraySeq[String]] = Future.sequence(bucketsJson).map { array =>
-      array.flatten
-    }
-
-    bucketsJsonFuture.map { ids =>
-      ids.toArray
-    }
-  }
