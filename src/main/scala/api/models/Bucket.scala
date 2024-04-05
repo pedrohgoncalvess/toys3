@@ -5,7 +5,6 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 final case class Bucket(
-                         id:Option[String],
                          name: String
                        )
 
@@ -16,7 +15,7 @@ final case class Buckets(
 
 trait BucketJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
-  implicit val bucketFormat: RootJsonFormat[Bucket] = jsonFormat2(Bucket.apply)
+  implicit val bucketFormat: RootJsonFormat[Bucket] = jsonFormat1(Bucket.apply)
 
   implicit val bucketsFormat: RootJsonFormat[Buckets] = jsonFormat1(Buckets.apply)
 
