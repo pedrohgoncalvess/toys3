@@ -6,38 +6,29 @@ import s3.metadata
 import s3.organizer.bucket.Bucket
 import utils.configs.bucketsPath
 import org.json4s.JsonAST.JObject
-import org.json4s.{JBool, JInt, JString}
+import org.json4s.{JBool, JField, JInt, JString}
 import scala.concurrent.Future
 
 
 class Metadata(
                 bucket:Bucket,
-                repositoryName:String,
+                name:String,
                 versioned:Boolean
-              ) extends metadata.Metadata {
+              ) extends metadata.Metadata:
 
-  override val metadataPath:String = s"$bucketsPath\\${bucket.bucketName}\\$repositoryName\\$metadataFileName"
+  override val metadataPath:String = s"$bucketsPath\\${bucket.name}\\$name\\$metadataFileName"
   
   import scala.concurrent.ExecutionContext.Implicits.global
 
   override def _content: Future[JObject] =
     Future:
-      JObject(
-        "created_at" -> JString(java.time.LocalDateTime.now().toString),
-        "created_by" -> JString("admin"),
-        "objects" -> JInt(0),
-        "active" -> JBool(true),
-        "versioned" -> JBool(versioned)
-      )
-
-  override def _generate: Future[Unit] =
-    val content: Future[JObject] = this._content
-    content.flatMap { value =>
-      this._create(value)
-    }
+        JObject(
+          "created_at" -> JString(java.time.LocalDateTime.now().toString),
+          "created_by" -> JString("admin"),
+          "objects" -> JInt(0),
+          "active" -> JBool(true),
+          "versioned" -> JBool(versioned)
+        )
 
 
-  //TODO: Implement this interfaces
-  override def _read: Future[Map[String, Any]] = ???
-  override def _disability: Future[Unit] = ???
-}
+

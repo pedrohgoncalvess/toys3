@@ -2,7 +2,6 @@ package pedro.goncalves
 package s3.organizer.bucket
 
 
-import api.models
 import utils.configs.bucketsPath
 import org.json4s.native.JsonMethods.*
 import org.json4s.*
@@ -10,6 +9,7 @@ import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import s3.organizer.Organizer
+import s3.organizer.repository.Repository
 
 
 /**
@@ -19,33 +19,18 @@ import s3.organizer.Organizer
   *
   */
 case class Bucket (
-                     bucketName:String
-                   ) extends Metadata(bucketName) with Organizer:
+                     name:String
+                   ) 
+  extends Metadata(name) with Organizer:
 
-  override val organizerPath: String = s"$bucketsPath\\$bucketName"
-
-  /**
-   * A method that checks to see if that bucket exists
-   *
-   * @return true for exist and false for non exists
-   */
+  override val organizerPath: String = s"$bucketsPath\\$name"
+  
   def check: Boolean = File(organizerPath).exists()
-
-
-  /**
-   * A method that create a bucket and a metadata file for this bucket
-   * @return result of creation operation
-   */
+  
   def create: Future[Unit] =
-    Future {
-      File(organizerPath).mkdir()
-      this._generate
-    }
+    File(organizerPath).mkdir()
+    this._generate
 
-  /**
-   * A method that exclude all files and repositories inside of bucket
-   * @return result of delete operation
-   */
   def exclude: Future[Unit] =
     Future {
       val bucket = File(organizerPath)
@@ -53,6 +38,18 @@ case class Bucket (
       bucketRepositories.foreach(_.listFiles().foreach(_.delete))
       bucket.listFiles.foreach(_.delete)
       bucket.delete()
+    }
+
+  def listRepositories: Future[Array[Repository]] =
+    val metadataContent: Future[Map[String, JValue]] = _read
+
+    metadataContent.map { content =>
+      content.get("repositories") match {
+        case Some(JArray(list)) => list.collect {
+          case JString(repo) => Repository(bucket=this, name=repo)
+        }.toArray
+        case _ => Array.empty[Repository]
+      }
     }
 
 
@@ -63,13 +60,8 @@ case class Bucket (
  * 
  * @return list of buckets objects
  */
-def listBuckets: Future[models.Buckets] =
-  Future {
-    models.Buckets(File(bucketsPath)
-      .listFiles
-      .map(bucket => models.Bucket(
-        name = bucket.getName
-        )
-      )
-    )
-  }
+
+def listBuckets: Future[Array[Bucket]] =
+  Future:
+    val bucketsFile = File(bucketsPath).listFiles.filter(!_.isFile)
+    bucketsFile.map(file => Bucket(file.getName))
