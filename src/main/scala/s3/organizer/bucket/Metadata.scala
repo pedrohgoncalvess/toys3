@@ -6,6 +6,7 @@ import org.json4s.{JBool, JInt, JString, JValue}
 import org.json4s.JsonAST.{JArray, JNull, JObject}
 import org.json4s.native.JsonMethods.*
 import s3.metadata
+import java.util.UUID
 import scala.util.{Failure, Success, Using}
 import scala.concurrent.Future
 import scala.io.Source
@@ -22,6 +23,7 @@ class Metadata(bucketName:String) extends metadata.Metadata:
   override def _content: Future[JObject] =
     Future:
       JObject(
+        "id" -> JString(UUID.fromString.toString),
         "created_at" -> JString(java.time.LocalDateTime.now().toString),
         "created_by" -> JString("admin"),
         "objects" -> JInt(0),
