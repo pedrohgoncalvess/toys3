@@ -11,7 +11,7 @@ import scala.collection.mutable
 import scala.concurrent.Future
 
 
-object Repository:
+object Service:
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def jsonRepositories(bucket: Bucket): Future[Repositories] =

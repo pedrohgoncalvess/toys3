@@ -13,7 +13,7 @@ import java.io.File
 import java.nio.file.{Files, Path}
 
 
-object File {
+object Service {
 
   def fileDestination(fileInfo: FileInfo)(implicit organizers: Model): File =
     val repositoryName = organizers.repository match
