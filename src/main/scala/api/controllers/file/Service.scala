@@ -1,26 +1,27 @@
 package pedro.goncalves
-package api.services
+package api.controllers.file
 
-
-import akka.http.scaladsl.server.directives.FileInfo
-import utils.configs
-import java.io.File
-import java.nio.file.{Files, Path}
-import utils.configs.bucketsPath
+import api.controllers.file.Model
 import s3.organizer.bucket.Bucket
 import s3.organizer.repository.Repository
-import api.models.FileStorage
+import utils.configs
+import utils.configs.bucketsPath
+
+import akka.http.scaladsl.server.directives.FileInfo
+
+import java.io.File
+import java.nio.file.{Files, Path}
 
 
 object File {
 
-  def fileDestination(fileInfo: FileInfo)(implicit organizers: FileStorage): File =
-    val repositoryName = organizers._2 match
+  def fileDestination(fileInfo: FileInfo)(implicit organizers: Model): File =
+    val repositoryName = organizers.repository match
       case value => value
       case null => fileInfo.fileName.split("\\.").toList.head
 
-    val versioned = organizers._3
-    val version = organizers._4
+    val versioned = organizers.versioned
+    val version = organizers.version
 
     val bucketName = organizers._1
     val bucketOperations = Bucket(bucketName)
@@ -40,7 +41,11 @@ object File {
       ).toFile
   
   
-  def completeStorage(bucket:String, repository:Option[String], versioned:Option[Boolean], version:Option[Float]): FileStorage =
+  def completeStorage(
+                       bucket:String, repository:Option[String],
+                       versioned:Option[Boolean],
+                       version:Option[Float]
+                     ): Model =
 
     val _repository = repository match
       case Some(value) => value
@@ -55,7 +60,7 @@ object File {
       case Some(value) => value
       case _ => 1.0f
       
-    FileStorage(
+    Model(
       bucket=bucket,
       repository=_repository,
       versioned=_versioned,

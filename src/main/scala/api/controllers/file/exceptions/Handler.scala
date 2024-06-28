@@ -4,7 +4,7 @@ package api.exceptions.file
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, extractUri}
 import akka.http.scaladsl.server.ExceptionHandler
-import api.exceptions.bucket.BucketNotExists
+import pedro.goncalves.api.controllers.bucket.exceptions.BucketNotExists
 
 implicit def fileExceptionHandler: ExceptionHandler =
   ExceptionHandler:

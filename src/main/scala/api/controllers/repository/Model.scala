@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.models
+package api.controllers.repository
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}

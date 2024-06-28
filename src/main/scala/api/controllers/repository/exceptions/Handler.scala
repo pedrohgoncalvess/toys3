@@ -1,23 +1,24 @@
 package pedro.goncalves
-package api.exceptions.bucket
+package api.exceptions.repository
 
 
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, extractUri}
 import akka.http.scaladsl.server.ExceptionHandler
-import api.exceptions.repository.DelTypeNotExists
+import akka.http.scaladsl.model.StatusCodes
+import pedro.goncalves.api.controllers.bucket.exceptions.BucketNotExists
 
 
-implicit def bucketExceptionHandler: ExceptionHandler =
+implicit def repositoryExceptionHandler: ExceptionHandler =
   ExceptionHandler:
     case e: BucketNotExists =>
       extractUri { _ =>
         complete(StatusCodes.NotFound, s"Bucket ${e.name} not exists.")
       }
-    case e: BucketExists =>
+    case e: RepositoryExists =>
       extractUri { _ =>
-        complete(StatusCodes.Conflict, s"Bucket ${e.name} already exists.")
+        complete(StatusCodes.Conflict, s"Repository ${e.name} already exists.")
       }
+
     case e: DelTypeNotExists =>
       extractUri { _ =>
         complete(StatusCodes.NotFound, s"delete type doesn't ${e._type} exist. Options: ['permanent', 'soft']")

@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.models
+package api.controllers.file
 
 case class FileStorage(
                       bucket:String,

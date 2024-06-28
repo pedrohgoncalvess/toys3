@@ -1,19 +1,20 @@
 package pedro.goncalves
-package api.services
+package api.controllers.repository
 
-
-import scala.concurrent.Future
-import api.models
-import api.models.Repositories
-import s3.organizer.bucket.listBuckets
+import api.controllers.bucket.Bucket
+import api.controllers.repository
+import api.controllers.repository.Repositories
 import s3.organizer
+import s3.organizer.bucket.listBuckets
+
 import scala.collection.mutable
+import scala.concurrent.Future
 
 
 object Repository:
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def jsonRepositories(bucket: models.Bucket): Future[models.Repositories] =
+  def jsonRepositories(bucket: Bucket): Future[Repositories] =
     listBuckets.flatMap { buckets =>
 
       val repositories: Array[Future[Array[organizer.repository.Repository]]] =
@@ -24,13 +25,13 @@ object Repository:
   
       futureArrayOfRepositories.map { repositories =>
         val updatedRepositories = repositories.map(repo =>
-          models.Repository(
+          repository.Repository(
             bucket_name = repo.bucket.name,
             name = repo.name,
             versioned = false
           )
         )
-        models.Repositories(updatedRepositories.toArray)
+        repository.Repositories(updatedRepositories.toArray)
       }
     }
 

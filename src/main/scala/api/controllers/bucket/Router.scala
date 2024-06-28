@@ -6,15 +6,18 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import utils.configs.projectPath
-import api.exceptions.bucket.{BucketNotExists, bucketExceptionHandler}
+import api.exceptions.bucket.bucketExceptionHandler
+
 import scala.util.{Failure, Success}
 import api.models
 import s3.organizer.bucket.Bucket
 import api.services.Bucket.jsonBuckets
 import api.exceptions.repository.DelTypeNotExists
 
+import pedro.goncalves.api.controllers.bucket.exceptions.BucketNotExists
 
-class main extends Directives with models.BucketJsonSupport:
+
+class Main extends Directives with models.BucketJsonSupport:
 
   val rootDir: String = projectPath()
 
@@ -48,12 +51,14 @@ class main extends Directives with models.BucketJsonSupport:
       delete {
         handleExceptions(bucketExceptionHandler) {
           parameter("name".as[String], "type".as[String]) { (bucketName, delType) =>
+
+            val deleteTypes = Array("permanent", "soft")
+            
+            if (deleteTypes.contains(delType))
+              throw DelTypeNotExists(delType)
+
             onComplete(jsonBuckets) {
               case Success(buckets) =>
-
-                if (delType != "permanent" && delType != "soft")
-                  throw DelTypeNotExists(delType)
-
 
                 val bucket = buckets.buckets.filter(bucket => bucket.name == bucketName)
 

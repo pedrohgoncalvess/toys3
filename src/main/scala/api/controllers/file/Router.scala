@@ -15,8 +15,8 @@ import api.services.File.{completeStorage, fileDestination}
 import api.models.FileStorage
 import api.exceptions.file.fileExceptionHandler
 import api.exceptions.file.{InconsistentParameters, InconsistentRepositoryVersion}
-import api.exceptions.bucket.BucketNotExists
 import api.exceptions.repository.RepositoryNotExists
+import pedro.goncalves.api.controllers.bucket.exceptions.BucketNotExists
 
 
 class main extends Directives:
@@ -29,32 +29,29 @@ class main extends Directives:
           handleExceptions(fileExceptionHandler) {
             parameter(
               "bucket".as[String],
-              "versioned".as[Boolean].optional,
               "repository".as[String].optional,
+              "versioned".as[Boolean].optional,
               "version".as[Float].optional,
               "create".as[Boolean].optional
-            ) { (bucket, rawVersioned, rawRepository, rawVersion, createRepository) =>
+            ) { (bucketName, rawRepositoryName, rawVersioned, rawVersion, createRepository) =>
 
-              val treatedParameters = completeStorage(bucket, rawRepository, rawVersioned, rawVersion)
+              val treatedParameters = completeStorage(bucketName, rawRepositoryName, rawVersioned, rawVersion)
 
               val createIfNotExists:Boolean = createRepository match
                 case Some(value) => value
                 case _ => false
 
-              if (treatedParameters.versioned && rawRepository.orNull == null)
+              if (treatedParameters.versioned && rawRepositoryName.orNull == null)
                 throw new InconsistentParameters
 
-              val bucketOperations = Bucket(bucket)
+              val bucketOperations = Bucket(bucketName)
 
               if (!bucketOperations.check)
-                throw BucketNotExists(bucket)
+                throw BucketNotExists(bucketName)
 
               val repository = Repository(bucketOperations, treatedParameters.repository)
 
-              if (!repository.check)
-                if (createIfNotExists)
-                  repository.create
-                else
+              if (!repository.check && !createIfNotExists)
                   throw RepositoryNotExists(repository.name)
 
               val lastVersion = repository.lastVersion
@@ -65,10 +62,25 @@ class main extends Directives:
 
               storeUploadedFile("file", fileDestination) {
                 case (metadata, file) =>
-                  val fileMetadata = CSVFile(repository, file.getPath, treatedParameters.versioned, treatedParameters.version)
-                  onComplete(fileMetadata._generate) {
-                    case Success(_) => complete(StatusCodes.OK)
-                    case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+
+                  val organizerPath = file.getPath.split("\\\\").dropRight(1).mkString("\\")
+                  val structuredFile = CSVFile(file.getPath, metadata.getFileName, organizerPath)
+
+                  if (createIfNotExists)
+
+                    onComplete(repository.create) {
+                      case Success(_) =>
+                        onComplete(structuredFile._generate) {
+                          case Success(_) => complete(StatusCodes.OK)
+                          case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+                        }
+                      case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+                    }
+
+                  else
+                    onComplete(structuredFile._generate) {
+                      case Success(_) => complete(StatusCodes.OK)
+                      case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
               }
             }
           }

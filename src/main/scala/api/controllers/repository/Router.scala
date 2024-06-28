@@ -8,12 +8,12 @@ import api.models
 import s3.organizer.bucket.{Bucket, listBuckets}
 import api.exceptions.repository.{DelTypeNotExists, RepositoryExists, RepositoryNotExists, repositoryExceptionHandler}
 import s3.organizer.repository.Repository
-import api.exceptions.bucket.BucketNotExists
 
 import scala.util.{Failure, Success}
 import akka.http.scaladsl.model.StatusCodes
 import api.services.Bucket.jsonBuckets
 import api.services.Repository.jsonRepositories
+import pedro.goncalves.api.controllers.bucket.exceptions.BucketNotExists
 
 
 class main extends Directives with models.RepositoryJsonSupport:
