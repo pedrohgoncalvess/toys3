@@ -8,23 +8,33 @@ lazy val root = (project in file("."))
     idePackagePrefix := Some("pedro.goncalves")
   )
 
-val AkkaVersion = "2.8.0"
+
+val AkkaVersion = "2.8.5"
 val AkkaHttpVersion = "10.5.0"
-val SlickVersion = "3.5.0-M5"
+val SlickVersion = "3.5.1"
 
 libraryDependencies ++= Seq(
+  //akka
   "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
   "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+
+  //database
   "com.typesafe.slick" %% "slick" % SlickVersion,
   "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
-  "org.postgresql" % "postgresql" % "42.3.4",
+  "org.xerial" % "sqlite-jdbc" % "3.46.0.0",
+  "org.flywaydb" % "flyway-core" % "6.0.0",
+
+  //json
   "org.codehaus.jackson" % "jackson-core-lgpl" % "1.9.13",
   "org.json4s" %% "json4s-native" % "4.0.7",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.3",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.3",
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.15.3",
-  "com.password4j" % "password4j" % "1.7.3",
-  "org.duckdb" % "duckdb_jdbc" % "0.10.0"
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.17.0",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.17.0",
+
+  //others
+  "com.password4j" % "password4j" % "1.8.1",
+  "org.duckdb" % "duckdb_jdbc" % "0.10.2",
+  "io.github.cdimascio" % "java-dotenv" % "5.2.2"
 )
