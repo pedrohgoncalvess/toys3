@@ -10,8 +10,9 @@ hs_err_pid*
 
 # End of https://www.toptal.com/developers/gitignore/api/scala
 
-# Temporary ignore
+# Personal ignore
 
-src/main/scala/data_process
-toys3/buckets/*
-toys3/config.json
+.idea
+.env
+.storage
+toys3

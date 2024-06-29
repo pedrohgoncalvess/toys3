@@ -1,12 +1,11 @@
 package pedro.goncalves
 package s3.structured
 
-import s3.metadata
 
+import s3.metadata
 import org.json4s.JInt
 import org.json4s.JsonAST.{JDouble, JObject, JString}
 import org.json4s.native.JsonMethods.*
-import s3.organizer.repository.Repository
 import java.io.File
 import java.sql.{Connection, DriverManager}
 import scala.concurrent.Future
@@ -14,18 +13,21 @@ import s3.metadata.Metadata
 
 
 case class CSVFile(
-                    repository:Repository,
                     filePath:String,
-                    versioned:Boolean,
+                    fileName:String,
+                    organizerPath:String,
                     version:Float=0f
                   ) extends Metadata:
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
 
-  //file informations
+  //file information
   private val path = filePath
-  val metadataPath: String = if versioned then s"${repository.organizerPath}\\v${version+1}\\$metadataFileName" else s"${repository.organizerPath}\\$metadataFileName"
+  private val fileNameWithoutExtension = fileName.split("\\.")(0)
+
+  //TODO: Adjust metadata file name for structured objects
+  val metadataPath: String = s"$organizerPath\\.$fileNameWithoutExtension$metadataFileName"
 
   //creating table
   implicit val duckConn: Connection = DriverManager.getConnection("jdbc:duckdb:")
@@ -120,16 +122,3 @@ case class CSVFile(
     }
 
     combinedFuture
-
-  override def _generate: Future[Unit] =
-    val metadata: Future[JObject] = this._content
-
-    metadata.flatMap { value =>
-      duckConn.close()
-      this._create(value)
-    }
-
-  override def _read: Future[Map[String, Any]] = ???
-
-  override def _disability: Future[Unit] = ???
-    
