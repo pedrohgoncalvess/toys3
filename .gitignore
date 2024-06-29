@@ -14,8 +14,5 @@ hs_err_pid*
 
 .idea
 .env
-
-# Temporary ignore
-
-src/main/scala/data_process
+.storage
 toys3
