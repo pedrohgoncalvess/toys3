@@ -14,6 +14,7 @@ import database.operations.InteractUser.{createNewUser, existsAdmin}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
+
 private def initializeService: Future[Unit] =
 
   flyway.migrate()
@@ -30,6 +31,9 @@ private def initializeService: Future[Unit] =
   val adminPassword = envPassword match
     case null => "admin"
     case pass => pass
+
+  if (adminUsername == "admin" || adminPassword == "admin")
+    println("The system is using default credentials. Consider changing for added security.")
 
 
   existsAdmin.map( t =>
