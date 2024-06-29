@@ -103,7 +103,6 @@ case class CSVFile(
     JDouble(formattedSize)
 
 
-
   override def _content: Future[JObject] =
     val totalRows: Future[JInt] = this.countRows
     val totalColumns: Future[JInt] = this.countColumns
