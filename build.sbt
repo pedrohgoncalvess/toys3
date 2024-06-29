@@ -12,6 +12,8 @@ lazy val root = (project in file("."))
 val AkkaVersion = "2.8.5"
 val AkkaHttpVersion = "10.5.0"
 val SlickVersion = "3.5.1"
+val JwtVersion = "10.0.0"
+
 
 libraryDependencies ++= Seq(
   //akka
@@ -32,6 +34,10 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.17.0",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
   "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.17.0",
+
+  //jwt
+  "com.github.jwt-scala" %% "jwt-play-json" % JwtVersion,
+  "com.github.jwt-scala" %% "jwt-core" % JwtVersion,
 
   //others
   "com.password4j" % "password4j" % "1.8.1",
