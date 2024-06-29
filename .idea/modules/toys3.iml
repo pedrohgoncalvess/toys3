@@ -16,8 +16,12 @@
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-annotations:2.17.1:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-core:2.17.1:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-databind:2.17.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.14.3:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.module:jackson-module-scala_3:2.17.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.github.jwt-scala:jwt-core_3:10.0.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.github.jwt-scala:jwt-json-common_3:10.0.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.github.jwt-scala:jwt-play-json_3:10.0.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.password4j:password4j:1.8.1:jar" level="project" />
     <orderEntry type="library" name="sbt: com.thoughtworks.paranamer:paranamer:2.8:jar" level="project" />
     <orderEntry type="library" name="sbt: com.typesafe.akka:akka-actor-typed_3:2.8.5:jar" level="project" />
@@ -47,6 +51,8 @@
     <orderEntry type="library" name="sbt: org.json4s:json4s-native-core_3:4.0.7:jar" level="project" />
     <orderEntry type="library" name="sbt: org.json4s:json4s-native_3:4.0.7:jar" level="project" />
     <orderEntry type="library" name="sbt: org.json4s:json4s-scalap_3:4.0.7:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.playframework:play-functional_3:3.0.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.playframework:play-json_3:3.0.1:jar" level="project" />
     <orderEntry type="library" name="sbt: org.reactivestreams:reactive-streams:1.0.4:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang.modules:scala-java8-compat_3:1.0.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.12:jar" level="project" />
