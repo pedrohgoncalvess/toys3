@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.exceptions.repository
+package api.controllers.repository.exceptions
 
 case class RepositoryExists(name:String) extends Exception
 

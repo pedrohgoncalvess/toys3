@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.exceptions.file
+package api.controllers.file.exceptions
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, extractUri}

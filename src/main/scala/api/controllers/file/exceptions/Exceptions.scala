@@ -1,5 +1,5 @@
 package pedro.goncalves
-package api.exceptions.file
+package api.controllers.file.exceptions
 
 class InconsistentParameters extends Exception
 

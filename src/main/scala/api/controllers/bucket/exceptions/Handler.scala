@@ -1,12 +1,12 @@
 package pedro.goncalves
-package api.exceptions.bucket
+package api.controllers.bucket.exceptions
 
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, extractUri}
 import akka.http.scaladsl.server.ExceptionHandler
-import api.exceptions.repository.DelTypeNotExists
-import pedro.goncalves.api.controllers.bucket.exceptions.{BucketExists, BucketNotExists}
+import api.controllers.repository.exceptions.DelTypeNotExists
+import api.controllers.bucket.exceptions.{BucketExists, BucketNotExists}
 
 
 implicit def bucketExceptionHandler: ExceptionHandler =

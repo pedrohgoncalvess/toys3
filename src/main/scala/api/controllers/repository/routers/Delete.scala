@@ -5,12 +5,13 @@ package api.controllers.repository.routers
 import akka.http.scaladsl.server.{Directives, Route}
 import utils.configs.projectPath
 import s3.organizer.bucket.{Bucket, listBuckets}
-import api.exceptions.repository.{DelTypeNotExists, RepositoryNotExists, repositoryExceptionHandler}
+import api.controllers.repository.exceptions.{DelTypeNotExists, RepositoryNotExists}
 import s3.organizer.repository.Repository
 import scala.util.{Failure, Success}
 import akka.http.scaladsl.model.StatusCodes
 import api.controllers.bucket.exceptions.BucketNotExists
 import api.controllers.repository.RepositoryJsonSupport
+import api.controllers.auth.Service.endpointAuthenticator
 
 
 class Delete extends Directives with RepositoryJsonSupport:
@@ -19,8 +20,9 @@ class Delete extends Directives with RepositoryJsonSupport:
 
   val rootDir: String = projectPath()
 
-  val route: Route = delete {
-        handleExceptions(repositoryExceptionHandler) {
+  val route: Route = authenticateOAuth2(realm = "secure site", endpointAuthenticator) { auth =>
+    authorize(true) { // TODO: Implement authorization logic    
+      delete {
           parameters(
             "bucket-name".as[String],
             "repository-name".as[String],
@@ -50,9 +52,10 @@ class Delete extends Directives with RepositoryJsonSupport:
                     onComplete(deleteOperation) {
                       case Success(_) => complete(StatusCodes.OK, s"Repository $repositoryName has been $typeOpr.")
                       case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
+                    }
                 }
-              }
             }
           }
         }
       }
+    }

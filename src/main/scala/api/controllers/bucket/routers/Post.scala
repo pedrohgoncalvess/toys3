@@ -9,11 +9,14 @@ import scala.util.{Failure, Success}
 import s3.organizer.bucket.Bucket
 import api.controllers.bucket
 import api.controllers.bucket.BucketJsonSupport
+import api.controllers.auth.Service.endpointAuthenticator
 
 
 class Post extends Directives with BucketJsonSupport:
 
-  val route: Route = post {
+  val route: Route = authenticateOAuth2(realm = "secure site", endpointAuthenticator) { auth =>
+    authorize(true) { // TODO: Implement authorization logic 
+      post {
         entity(as[bucket.Bucket]) { bucket =>
           val bucketOperations = Bucket(bucket.name)
 
@@ -24,8 +27,10 @@ class Post extends Directives with BucketJsonSupport:
             onComplete(bucketOperations.create) {
               case Success(_) => complete(StatusCodes.OK)
               case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
-          }
+            }
+        }
       }
+    }
   }
 
 

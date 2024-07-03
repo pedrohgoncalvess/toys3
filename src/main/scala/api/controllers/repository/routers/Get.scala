@@ -4,22 +4,22 @@ package api.controllers.repository.routers
 
 import akka.http.scaladsl.server.{Directives, Route}
 import utils.configs.projectPath
-import api.exceptions.repository.repositoryExceptionHandler
 import scala.util.{Failure, Success}
 import akka.http.scaladsl.model.StatusCodes
 import api.controllers.bucket.BucketService.jsonBuckets
 import api.controllers.repository.Service.jsonRepositories
 import api.controllers.bucket.exceptions.BucketNotExists
 import api.controllers.repository.RepositoryJsonSupport
+import api.controllers.auth.Service.endpointAuthenticator
 
 
 class Get extends Directives with RepositoryJsonSupport:
   
-
   val rootDir: String = projectPath()
 
-  val route: Route = get {
-        handleExceptions(repositoryExceptionHandler) {
+  val route: Route = authenticateOAuth2(realm = "secure site", endpointAuthenticator) { auth =>
+    authorize(true) { // TODO: Implement authorization logic    
+      get {
           parameter("bucket-name".as[String]) { nameBucket =>
             onComplete(jsonBuckets) {
               case Success(buckets) =>
@@ -32,8 +32,9 @@ class Get extends Directives with RepositoryJsonSupport:
                 onComplete(repositories) {
                   case Success(repos) => complete(StatusCodes.OK, repos)
                   case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
-              }
+                }
             }
           }
         }
       }
+    }

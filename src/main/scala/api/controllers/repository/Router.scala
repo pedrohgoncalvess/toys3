@@ -3,7 +3,8 @@ package api.controllers.repository
 
 
 import akka.http.scaladsl.server.{Directives, Route}
-import api.controllers.bucket.routers.{Get, Post, Delete}
+import api.controllers.repository.routers.{Get, Post, Delete}
+import api.controllers.repository.exceptions.repositoryExceptionHandler
 
 
 class Router extends Directives:
@@ -12,4 +13,10 @@ class Router extends Directives:
   private val postMethod = new Post
   private val delMethod = new Delete
 
-  val route: Route = pathPrefix("repository") { concat(getMethod.route, postMethod.route, delMethod.route) }
+  val route: Route = pathPrefix("repository") {
+    handleExceptions(repositoryExceptionHandler) {
+      {
+        concat(getMethod.route, postMethod.route, delMethod.route)
+      }
+    }
+  }
