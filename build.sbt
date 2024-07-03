@@ -8,7 +8,6 @@ lazy val root = (project in file("."))
     idePackagePrefix := Some("pedro.goncalves")
   )
 
-
 val AkkaVersion = "2.8.5"
 val AkkaHttpVersion = "10.5.0"
 val SlickVersion = "3.5.1"
