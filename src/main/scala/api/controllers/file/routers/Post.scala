@@ -14,12 +14,12 @@ import scala.util.{Failure, Success}
 import api.controllers.file.Service.{completeStorage, fileDestination}
 import api.exceptions.file.fileExceptionHandler
 import api.exceptions.file.{InconsistentParameters, InconsistentRepositoryVersion}
-import api.exceptions.repository.RepositoryNotExists
+import api.controllers.repository.exceptions.RepositoryNotExists
 import api.controllers.bucket.exceptions.BucketNotExists
 import api.controllers.file.Model
 
 
-class Get extends Directives:
+class Post extends Directives:
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
