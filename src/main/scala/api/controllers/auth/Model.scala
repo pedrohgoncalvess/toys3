@@ -12,8 +12,14 @@ final case class AuthCredentials(
                        )
 
 
+final case class AuthResponse(
+                             token: String,
+                             expire_at: String
+                             )
+
 trait AuthCredentialsJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit val authCredentialsFormat: RootJsonFormat[AuthCredentials] = jsonFormat2(AuthCredentials.apply)
+  implicit val authResponseFormat: RootJsonFormat[AuthResponse] = jsonFormat2(AuthResponse.apply)
 
 }
