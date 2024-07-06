@@ -8,4 +8,4 @@ RUN sbt update
 
 EXPOSE 8080
 
-CMD ["sbt", "-J-Xmx412m", "-J-XX:+UseG1GC", "run"]
+CMD ["sbt", "run"]

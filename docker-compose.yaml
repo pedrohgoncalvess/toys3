@@ -11,7 +11,6 @@ services:
     tty: true
     networks:
       - my-network
-    command: ["sbt", "clean", "run"]
-
+    command: [ "sbt", "-J-Xms256m", "-J-Xmx412m", "-J-XX:+UseG1GC", "-J-XX:MaxGCPauseMillis=100", "-J-XX:ParallelGCThreads=2", "run" ]
 networks:
   my-network:
