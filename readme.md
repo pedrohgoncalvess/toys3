@@ -1,30 +1,47 @@
 # ToyS3
 
-Este projeto é uma tentativa de replicar um S3 (Simple Storage Service) com bastante foco em arquivos
-de dados estruturados como CSV, Parquet, ORC, Avro e afins. Ele terá algumas features a mais comparado com outros
-serviços mais conhecidos como:
+ToyS3 is a distributed S3 system created for learning purposes. This project aims to help developers understand the concepts of distributed systems, object storage, and other related technologies.
 
-## Metadados dos arquivos.
+## Purpose
 
-- Tamanho
-- Valores distintos
-- Schema (colunas e tipos)
-- Quantidade de linhas
+The main goal of ToyS3 is to provide a hands-on experience with building a distributed S3 system. By working on this project, you will gain knowledge and skills in:
 
+- Distributed systems
+- Object storage
+- Akka HTTP
+- Scala
+- Docker
 
+## Installation
 
-# Code Patterns
+To run ToyS3, you need to have Docker and Docker Compose installed on your machine. Follow the instructions below to set up and run the project.
 
-## Abbreviations
+### Prerequisites
 
-Navegando no código ou nos arquivos de metadata pode ser que você encontre algumas abreviações/siglas, elas
-variam de 2 a 3 letras que podem deixar você confuso, e se eventualmente você for fazer qualquer alteração
-nós recomendamos que você utilize essas sigles caso elas se encaixem.
+- Docker: [Install Docker](https://docs.docker.com/get-docker/)
+- Docker Compose: [Install Docker Compose](https://docs.docker.com/compose/install/)
 
-**pvt**: private (private field read only for the app)
+### Running the Project
 
-**dt**: date (date field. Ex: YYYY-MM-DD)
+1. Clone the repository:
 
-**tms**: timestamp (timestamp field: Ex: YYYY-MM-DD HH:MM:SSS)
+    ```sh
+    git clone https://github.com/your-username/toys3.git
+    cd toys3
+    ```
 
-**dlt**: delimiter (delimiter character)
+2. Build and start the services using Docker Compose:
+
+    ```sh
+    docker-compose up
+    ```
+
+This command will build the Docker image and start the Akka HTTP server. The application will be accessible at `http://localhost:8080`.
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and create a pull request to contribute to the project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
