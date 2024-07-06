@@ -2,13 +2,15 @@ package pedro.goncalves
 package database.operations
 
 
+import scala.concurrent.Future
+import java.util.UUID
+
+import slick.jdbc.SQLiteProfile.api.*
+
+import database.Connection.db
+import api.user.Service.calculateHash
 import database.models.User
 import database.models.UserTable.userTable
-import scala.concurrent.Future
-import slick.jdbc.SQLiteProfile.api.*
-import database.Connection.db
-import api.controllers.user.Service.calculateHash
-import java.util.UUID
 
 
 object InteractUser:
