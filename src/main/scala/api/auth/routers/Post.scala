@@ -1,17 +1,18 @@
 package pedro.goncalves
-package pedro.goncalves.api.auth.routers
+package api.auth.routers
 
-import akka.http.scaladsl.server.{Directives, Route}
-import database.operations.InteractUser.getUserByUsername
-
-import akka.http.scaladsl.model.StatusCodes
-import api.controllers.auth.Service.generateToken
-import api.controllers.user.Service.calculateHash
-
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
 
 import java.util.Base64
 import scala.util.{Failure, Success}
+
+import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.*
+
+import api.auth.Service.generateToken
+import api.auth.{AuthCredentialsJsonSupport, AuthCredentials, AuthResponse}
+import api.user.Service.calculateHash
+import database.operations.InteractUser.getUserByUsername
 
 
 class Post extends Directives with AuthCredentialsJsonSupport:

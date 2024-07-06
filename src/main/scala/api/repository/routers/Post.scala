@@ -1,14 +1,20 @@
 package pedro.goncalves
-package pedro.goncalves.api.repository.routers
+package api.repository.routers
 
-import akka.http.scaladsl.server.{Directives, Route}
-import s3.organizer.bucket.Bucket
-import api.controllers.repository.exceptions.repositoryExceptionHandler
-import s3.organizer.repository.Repository
 
 import scala.util.{Failure, Success}
+
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes
-import api.controllers.auth.Service.endpointAuthenticator
+
+import api.repository.exceptions.repositoryExceptionHandler
+import api.repository.RepositoryJsonSupport
+import api.repository.Repository as RepositoryBody
+import api.auth.Service.endpointAuthenticator
+import api.bucket.exceptions.BucketNotExists
+import api.repository.exceptions.RepositoryExists
+import s3.organizer.repository.Repository
+import s3.organizer.bucket.Bucket
 
 
 class Post extends Directives with RepositoryJsonSupport:
@@ -16,7 +22,7 @@ class Post extends Directives with RepositoryJsonSupport:
   val route: Route = authenticateOAuth2(realm = "secure site", endpointAuthenticator) { auth =>
     authorize(true) { // TODO: Implement authorization logic    
       post {
-          entity(as[repository.Repository]) { repository =>
+          entity(as[RepositoryBody]) { repository =>
             val bucketOrg = Bucket(repository.bucket_name)
 
             if (!bucketOrg.check)

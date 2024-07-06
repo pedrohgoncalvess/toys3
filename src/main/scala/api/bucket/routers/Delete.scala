@@ -1,16 +1,20 @@
 package pedro.goncalves
-package pedro.goncalves.api.bucket.routers
+package api.bucket.routers
+
+
+import scala.util.{Failure, Success}
 
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
-import utils.configs.projectPath
 
-import scala.util.{Failure, Success}
 import s3.organizer.bucket.Bucket
-import api.controllers.bucket
-import api.controllers.bucket.BucketService.jsonBuckets
-import api.controllers.auth.Service.endpointAuthenticator
+import api.bucket.BucketJsonSupport
+import api.bucket.BucketService.jsonBuckets
+import api.auth.Service.endpointAuthenticator
+import api.repository.exceptions.DelTypeNotExists
+import api.bucket.exceptions.BucketNotExists
+import utils.configs.projectPath
 
 
 class Delete extends Directives with BucketJsonSupport:

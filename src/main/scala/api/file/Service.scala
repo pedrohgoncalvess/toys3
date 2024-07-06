@@ -1,20 +1,21 @@
 package pedro.goncalves
-package pedro.goncalves.api.file
+package api.file
+
+
+import java.io.File
+import java.nio.file.{Files, Path}
+
+import akka.http.scaladsl.server.directives.FileInfo
 
 import s3.organizer.bucket.Bucket
 import s3.organizer.repository.Repository
 import utils.configs
 import utils.configs.bucketsPath
 
-import akka.http.scaladsl.server.directives.FileInfo
-
-import java.io.File
-import java.nio.file.{Files, Path}
-
 
 object Service {
 
-  def fileDestination(fileInfo: FileInfo)(implicit organizers: Model): File =
+  def fileDestination(fileInfo: FileInfo)(implicit organizers: RepositoryMetadata): File =
     val repositoryName = organizers.repository match
       case value => value
       case null => fileInfo.fileName.split("\\.").toList.head
@@ -44,7 +45,7 @@ object Service {
                        bucket:String, repository:Option[String],
                        versioned:Option[Boolean],
                        version:Option[Float]
-                     ): Model =
+                     ): RepositoryMetadata =
 
     val _repository = repository match
       case Some(value) => value
@@ -59,7 +60,7 @@ object Service {
       case Some(value) => value
       case _ => 1.0f
       
-    Model(
+    RepositoryMetadata(
       bucket=bucket,
       repository=_repository,
       versioned=_versioned,

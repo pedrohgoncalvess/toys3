@@ -1,18 +1,20 @@
 package pedro.goncalves
-package pedro.goncalves.api.repository
+package api.repository
 
-import api.controllers.repository
-import s3.organizer
-import s3.organizer.bucket.listBuckets
 
 import scala.collection.mutable
 import scala.concurrent.Future
+
+import api.repository
+import api.bucket.Bucket as BucketJson
+import s3.organizer
+import s3.organizer.bucket.listBuckets
 
 
 object Service:
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def jsonRepositories(bucket: Bucket): Future[Repositories] =
+  def jsonRepositories(bucket: BucketJson): Future[Repositories] =
     listBuckets.flatMap { buckets =>
 
       val repositories: Array[Future[Array[organizer.repository.Repository]]] =
@@ -26,7 +28,7 @@ object Service:
           api.repository.Repository(
             bucket_name = repo.bucket.name,
             name = repo.name,
-            versioned = false
+            versioned = repo.versioned
           )
         )
         api.repository.Repositories(updatedRepositories.toArray)

@@ -1,9 +1,9 @@
 package pedro.goncalves
-package pedro.goncalves.api.file
+package api.file
 
-case class Model(
-                      bucket:String,
-                      repository:String,
-                      versioned:Boolean,
-                      version:Float
-                      )
+case class RepositoryMetadata(
+                bucket:String,
+                repository:String,
+                versioned:Boolean,
+                version:Float
+                  )

@@ -1,9 +1,12 @@
 package pedro.goncalves
-package pedro.goncalves.api.bucket
+package api.bucket
+
 
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
-import api.controllers.bucket.exceptions.bucketExceptionHandler
+
+import api.bucket.exceptions.bucketExceptionHandler
+import api.bucket.routers.{Get, Post, Delete}
 
 
 class Router extends Directives:

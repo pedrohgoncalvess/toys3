@@ -1,14 +1,19 @@
 package pedro.goncalves
-package pedro.goncalves.api.repository.routers
+package api.repository.routers
 
-import akka.http.scaladsl.server.{Directives, Route}
-import utils.configs.projectPath
-import s3.organizer.bucket.{Bucket, listBuckets}
-import s3.organizer.repository.Repository
 
 import scala.util.{Failure, Success}
+
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes
-import api.controllers.auth.Service.endpointAuthenticator
+
+import api.auth.Service.endpointAuthenticator
+import api.repository.RepositoryJsonSupport
+import utils.configs.projectPath
+import api.repository.exceptions.{DelTypeNotExists, RepositoryNotExists}
+import api.bucket.exceptions.BucketNotExists
+import s3.organizer.bucket.{Bucket, listBuckets}
+import s3.organizer.repository.Repository
 
 
 class Delete extends Directives with RepositoryJsonSupport:

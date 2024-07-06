@@ -1,9 +1,12 @@
 package pedro.goncalves
-package pedro.goncalves.api.file
+package api.file
+
 
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
-import api.controllers.file.exceptions.fileExceptionHandler
+
+import api.file.exceptions.fileExceptionHandler
+import api.file.routers.Post
 
 
 class Router extends Directives:

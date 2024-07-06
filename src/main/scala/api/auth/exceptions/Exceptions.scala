@@ -1,5 +1,5 @@
 package pedro.goncalves
-package pedro.goncalves.api.auth.exceptions
+package api.auth.exceptions
 
 case class ExpiredToken() extends Exception("Token expired.")
 

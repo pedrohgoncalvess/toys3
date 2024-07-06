@@ -1,5 +1,5 @@
 package pedro.goncalves
-package pedro.goncalves.api.repository.exceptions
+package api.repository.exceptions
 
 case class RepositoryExists(name:String) extends Exception
 

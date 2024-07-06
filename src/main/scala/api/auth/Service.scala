@@ -1,5 +1,9 @@
 package pedro.goncalves
-package pedro.goncalves.api.auth
+package api.auth
+
+
+import scala.util.{Failure, Success}
+import java.time.Clock
 
 import io.github.cdimascio.dotenv.Dotenv
 import play.api.libs.json.*
@@ -7,8 +11,7 @@ import pdi.jwt.exceptions.{JwtEmptyAlgorithmException, JwtExpirationException}
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim}
 import akka.http.scaladsl.server.directives.Credentials
 
-import scala.util.{Failure, Success}
-import java.time.Clock
+import api.auth.exceptions.{ExpiredToken, NotValidToken}
 
 
 object Service:

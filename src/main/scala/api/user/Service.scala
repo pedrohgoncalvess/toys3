@@ -1,5 +1,5 @@
 package pedro.goncalves
-package pedro.goncalves.api.user
+package api.user
 
 import java.security.MessageDigest
 import java.util.Base64

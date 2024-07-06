@@ -1,5 +1,5 @@
 package pedro.goncalves
-package pedro.goncalves.api.bucket
+package api.bucket
 
 import s3.organizer
 import s3.organizer.bucket.listBuckets

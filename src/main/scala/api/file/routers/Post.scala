@@ -1,19 +1,25 @@
 package pedro.goncalves
-package pedro.goncalves.api.file.routers
+package api.file.routers
+
+
+import java.io.File
+import scala.util.{Failure, Success}
 
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.directives.FileInfo
 
-import java.io.File
+import api.file.Service.{completeStorage, fileDestination}
+import api.file.RepositoryMetadata
+import api.auth.Service.endpointAuthenticator
+import api.file.exceptions.InconsistentRepositoryVersion
+import api.file.exceptions.InconsistentParameters
+import api.repository.exceptions.{RepositoryExists, RepositoryNotExists}
+import api.bucket.exceptions.BucketNotExists
 import s3.organizer.bucket.Bucket
 import s3.organizer.repository.Repository
 import s3.structured.CSVFile
-
-import scala.util.{Failure, Success}
-import api.controllers.file.Service.{completeStorage, fileDestination}
-import api.controllers.auth.Service.endpointAuthenticator
 
 
 class Post extends Directives:
@@ -54,7 +60,7 @@ class Post extends Directives:
           if (lastVersion >= treatedParameters.version)
             throw InconsistentRepositoryVersion(lastVersion)
 
-          implicit val organizers: Model = treatedParameters
+          implicit val organizers: RepositoryMetadata = treatedParameters
 
           storeUploadedFile("file", fileDestination) {
             case (metadata, file) =>
