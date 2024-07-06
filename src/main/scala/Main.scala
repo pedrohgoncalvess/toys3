@@ -1,20 +1,21 @@
 package pedro.goncalves
 
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.*
+import scala.util.{Failure, Success}
+import java.nio.file.{Files, Paths}
+import scala.io.StdIn
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-import scala.io.StdIn
-import api.controllers
-import database.migration.Migration.flyway
 import io.github.cdimascio.dotenv.Dotenv
+
+import database.migration.Migration.flyway
 import database.operations.InteractUser.{createNewUser, existsAdmin}
-import java.nio.file.{Files, Paths}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.*
-import scala.util.{Failure, Success}
 
 
 private def initializeService: Future[Unit] =
@@ -57,18 +58,16 @@ private def initializeService: Future[Unit] =
 
 
 @main def Main(): Unit =
-  import api.controllers.bucket.Router
-  import api.controllers.file.Router
 
   val preparingEnv = initializeService
   println("Preparing env...")
 
   Await.result(preparingEnv, 5.seconds)
 
-  val bucket = new controllers.bucket.Router
-  val file = new controllers.file.Router
-  val repository = new controllers.repository.Router
-  val auth = new controllers.auth.Router
+  val bucket = new api.bucket.Router
+  val file = new api.file.Router
+  val repository = new api.repository.Router
+  val auth = new api.auth.Router
 
   implicit val system: ActorSystem[Any] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
