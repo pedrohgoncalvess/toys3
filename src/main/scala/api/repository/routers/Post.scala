@@ -7,14 +7,12 @@ import scala.util.{Failure, Success}
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes
 
-import api.repository.exceptions.repositoryExceptionHandler
 import api.repository.RepositoryJsonSupport
 import api.repository.Repository as RepositoryBody
 import api.auth.Service.endpointAuthenticator
 import api.bucket.exceptions.BucketNotExists
 import api.repository.exceptions.RepositoryExists
-import s3.organizer.repository.Repository
-import s3.organizer.bucket.Bucket
+import s3.organizer.implementations.{Bucket, Repository}
 
 
 class Post extends Directives with RepositoryJsonSupport:
@@ -36,8 +34,8 @@ class Post extends Directives with RepositoryJsonSupport:
 
             if (repositoryOrg.check)
               throw RepositoryExists(repository.name)
-
-            onComplete(repositoryOrg.create) {
+            
+            onComplete(repositoryOrg.create(Some(null))) {
               case Success(_) => complete(StatusCodes.Created, "Created")
               case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
             }
