@@ -1,20 +1,22 @@
 package pedro.goncalves
-package s3.organizer.bucket
+package s3.metadata.implementations
 
+import s3.metadata
 
-import org.json4s.{JBool, JInt, JString, JValue}
 import org.json4s.JsonAST.{JArray, JNull, JObject}
 import org.json4s.native.JsonMethods.*
-import s3.metadata
+import org.json4s.{JBool, JInt, JString, JValue}
+
 import java.util.UUID
-import scala.util.{Failure, Success, Using}
 import scala.concurrent.Future
 import scala.io.Source
+import scala.util.{Failure, Success, Using}
 
 
-class Metadata(bucketName:String) extends metadata.Metadata:
+class Bucketm(bucketName:String) extends metadata.Metadata:
 
   import utils.configs.bucketsPath
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
   override val metadataPath: String = s"$bucketsPath\\$bucketName\\$metadataFileName"

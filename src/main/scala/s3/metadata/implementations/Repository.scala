@@ -1,12 +1,13 @@
 package pedro.goncalves
-package s3.organizer.repository
-
+package s3.metadata.implementations
 
 import s3.metadata
 import s3.organizer.bucket.Bucket
 import utils.configs.bucketsPath
+
 import org.json4s.JsonAST.JObject
 import org.json4s.{JBool, JField, JInt, JString}
+
 import java.util.UUID
 import scala.concurrent.Future
 

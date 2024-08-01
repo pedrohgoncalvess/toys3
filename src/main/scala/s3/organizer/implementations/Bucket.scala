@@ -2,14 +2,17 @@ package pedro.goncalves
 package s3.organizer.bucket
 
 
-import utils.configs.bucketsPath
-import org.json4s.native.JsonMethods.*
-import org.json4s.*
 import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
+import org.json4s.native.JsonMethods.*
+import org.json4s.*
+
+import utils.configs.bucketsPath
 import s3.organizer.Organizer
 import s3.organizer.repository.Repository
+import s3.metadata.implementations.Bucket as BucketMetadata
 
 
 /**
@@ -21,7 +24,7 @@ import s3.organizer.repository.Repository
 case class Bucket (
                      name:String
                    ) 
-  extends Metadata(name) with Organizer:
+  extends BucketMetadata(name) with Organizer:
 
   override val organizerPath: String = s"$bucketsPath\\$name"
   

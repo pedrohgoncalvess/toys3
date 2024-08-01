@@ -1,21 +1,22 @@
 package pedro.goncalves
-package s3.organizer.repository
+package s3.organizer.implementations
 
-
+import s3.metadata.implementations.Repository as RepositoryMetadata
 import s3.organizer.Organizer
+import s3.organizer.implementations.Bucket
 import utils.configs.bucketsPath
-import s3.organizer.bucket.Bucket
+
 import java.io.File
 import scala.concurrent.Future
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 
 case class Repository(
-                       bucket:Bucket,
-                       name:String,
-                       versioned:Boolean=false
+                     bucket:Bucket,
+                     name:String,
+                     versioned:Boolean=false
                        )
-  extends Metadata(
+  extends RepositoryMetadata(
     bucket=bucket,
     name=name,
     versioned=versioned
@@ -53,5 +54,5 @@ case class Repository(
   def createVersion(lastVersion:Float): Unit =
     File(s"$organizerPath\\v${lastVersion+1}").mkdir()
 
-  override def check: Boolean =
+  def check: Boolean =
       File(organizerPath).exists()
