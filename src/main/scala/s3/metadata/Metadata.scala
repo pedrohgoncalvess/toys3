@@ -31,9 +31,11 @@ trait Metadata:
     content.flatMap { value =>
       this._create(value)
     }
-    
+
+
   def _exists: Boolean =
     File(metadataPath).exists
+
 
   def _getID(implicit ex: ExecutionContext): Future[Option[String]] =
     if (this._exists)
@@ -64,7 +66,8 @@ trait Metadata:
       }
 
       jsonToMap
-      
+
+
   /**
    *a function that rewrites the .metadata.json file with the new JObject provided.
    * 
@@ -104,5 +107,3 @@ trait Metadata:
       updatedJson.merge(JObject("status_changed_by" -> JString(userID.toString)))
 
     this._create(finalJson)
-
-  
