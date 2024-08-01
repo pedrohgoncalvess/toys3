@@ -1,7 +1,6 @@
 package pedro.goncalves
 package api.bucket.models
 
-import api.bucket.{Bucket, Buckets}
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
