@@ -7,10 +7,11 @@ import akka.http.scaladsl.server.Directives.{complete, extractUri}
 import akka.http.scaladsl.server.ExceptionHandler
 
 import api.bucket.exceptions.BucketNotExists
+import api.auth.exceptions.authExceptionHandler
 
 
 implicit def fileExceptionHandler: ExceptionHandler =
-  ExceptionHandler:
+  ExceptionHandler {
     case _: InconsistentParameters =>
       extractUri { _ =>
         complete(StatusCodes.UnprocessableContent, "If versioned needs a repository name.")
@@ -25,3 +26,4 @@ implicit def fileExceptionHandler: ExceptionHandler =
       extractUri { _ =>
         complete(StatusCodes.NotFound, s"Bucket ${e.name} not exists.")
       }
+  }.withFallback(authExceptionHandler)
