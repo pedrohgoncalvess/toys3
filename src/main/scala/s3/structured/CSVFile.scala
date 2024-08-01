@@ -2,17 +2,19 @@ package pedro.goncalves
 package s3.structured
 
 
-import s3.metadata
-import org.json4s.JInt
-import org.json4s.JsonAST.{JDouble, JObject, JString}
-import org.json4s.native.JsonMethods.*
 import java.io.File
 import java.sql.{Connection, DriverManager}
 import scala.concurrent.Future
+
+import org.json4s.JInt
+import org.json4s.JsonAST.{JDouble, JObject, JString}
+import org.json4s.native.JsonMethods.*
+
+import s3.metadata
 import s3.metadata.Metadata
 
 
-case class CSVFile(
+case class CSVFile(  // TODO: Implement create method and make this abstract case class only case class
                     filePath:String,
                     fileName:String,
                     organizerPath:String,
@@ -38,13 +40,15 @@ case class CSVFile(
          | SELECT * FROM read_csv('$path');"""
         .stripMargin
     )
+    
+  def _create(content: JObject): Future[Unit] = ???
 
 
-  def sniffConfigurations: Future[JObject] =
+  private def sniffConfigurations: Future[JObject] =
     Future:
       val statement = duckConn.createStatement()
 
-      val createSniffTable = statement.execute(
+      statement.execute(
         s"""create or replace table
            | sniff_conf as select * from sniff_csv('$path')"""
           .stripMargin
@@ -71,7 +75,7 @@ case class CSVFile(
 
       jsonValue
   
-  def countRows: Future[JInt] =
+  private def countRows: Future[JInt] =
     Future:
       val statement = this.duckConn.createStatement()
       val totalLinesStmt = statement.executeQuery(
@@ -82,7 +86,7 @@ case class CSVFile(
       JInt(numRows)
 
 
-  def countColumns: Future[JInt] =
+  private def countColumns: Future[JInt] =
     Future:
       val statement = this.duckConn.createStatement()
       val countColumnsStmt = statement.executeQuery(
@@ -103,7 +107,7 @@ case class CSVFile(
     JDouble(formattedSize)
 
 
-  override def _content: Future[JObject] =
+  def _content(externalMetadata: Option[JObject]): Future[JObject] =
     val totalRows: Future[JInt] = this.countRows
     val totalColumns: Future[JInt] = this.countColumns
     val sniffConf: Future[JObject] = this.sniffConfigurations
