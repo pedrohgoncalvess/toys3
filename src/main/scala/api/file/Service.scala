@@ -6,11 +6,9 @@ import java.io.File
 import java.nio.file.{Files, Path}
 
 import akka.http.scaladsl.server.directives.FileInfo
-
-import s3.organizer.bucket.Bucket
-import s3.organizer.repository.Repository
 import utils.configs
 import utils.configs.bucketsPath
+import s3.organizer.implementations.{Bucket, Repository}
 
 
 object Service {
