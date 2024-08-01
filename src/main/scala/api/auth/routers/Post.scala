@@ -33,11 +33,11 @@ class Post extends Directives with AuthCredentialsJsonSupport:
             if (user.orNull == null)
               complete(StatusCodes.Unauthorized)
             else if (user.get.password == hashedPass)
-              val token = generateToken(user.get.username, user.get.admin)
+              val token = generateToken(user.get)
               complete(StatusCodes.OK, AuthResponse(token, java.time.LocalDateTime.now.plusHours(5).toString))
             else
               complete(StatusCodes.Unauthorized)
-          case Failure(exception) => reject
+          case Failure(exception) => reject  //TODO: Study what reject function makes
         }
       }
     }
