@@ -14,24 +14,16 @@ case class Profile(
                  created_at: Option[LocalDateTime]
                )
 
-object Profile {
-  def tupled: ((UUID, Option[Array[UUID]], Option[Array[UUID]], Boolean, Option[LocalDateTime])) => Profile =
-    (Profile.apply _).tupled
-}
 
-object ProfileTable {
+object Profile:
+  def tupled: ((UUID, Option[Array[UUID]], Option[Array[UUID]], Boolean, Option[LocalDateTime])) => Profile =
+    Profile.apply.tupled
+
+
+object ProfileTable:
 
   import slick.jdbc.SQLiteProfile.api._
-
-  implicit val uuidColumnType:BaseColumnType[UUID] = MappedColumnType.base[UUID, String](
-    _.toString,
-    UUID.fromString
-  )
-
-  implicit val uuidArrayColumnType: BaseColumnType[Option[Array[UUID]]] = MappedColumnType.base[Option[Array[UUID]], String](
-    _.map(_.map(_.toString).mkString(",")).getOrElse(""),
-    str => if (str.isEmpty) None else Some(str.split(",").map(UUID.fromString))
-  )
+  import database.models.Utils._
 
   class ProfileTable(tag: Tag) extends Table[Profile](tag, "profile") {
     def id = column[UUID]("id", O.PrimaryKey)
@@ -51,4 +43,3 @@ object ProfileTable {
   }
 
   lazy val profileTable = TableQuery[ProfileTable]
-}
