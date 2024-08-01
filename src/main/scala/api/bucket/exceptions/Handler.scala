@@ -7,10 +7,11 @@ import akka.http.scaladsl.server.ExceptionHandler
 
 import api.repository.exceptions.DelTypeNotExists
 import api.bucket.exceptions.{BucketExists, BucketNotExists}
+import api.auth.exceptions.authExceptionHandler
 
 
 implicit def bucketExceptionHandler: ExceptionHandler =
-  ExceptionHandler:
+  ExceptionHandler {
     case e: BucketNotExists =>
       extractUri { _ =>
         complete(StatusCodes.NotFound, s"Bucket ${e.name} not exists.")
@@ -23,3 +24,4 @@ implicit def bucketExceptionHandler: ExceptionHandler =
       extractUri { _ =>
         complete(StatusCodes.NotFound, s"delete type doesn't ${e._type} exist. Options: ['permanent', 'soft']")
       }
+  }.withFallback(authExceptionHandler)

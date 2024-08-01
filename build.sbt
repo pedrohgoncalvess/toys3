@@ -12,6 +12,7 @@ val AkkaVersion = "2.8.5"
 val AkkaHttpVersion = "10.5.0"
 val SlickVersion = "3.5.1"
 val JwtVersion = "10.0.0"
+val JacksonVersion = "2.17.0"
 
 
 libraryDependencies ++= Seq(
@@ -30,9 +31,9 @@ libraryDependencies ++= Seq(
   //json
   "org.codehaus.jackson" % "jackson-core-lgpl" % "1.9.13",
   "org.json4s" %% "json4s-native" % "4.0.7",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.17.0",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.17.0",
+  "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % JacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion,
 
   //jwt
   "com.github.jwt-scala" %% "jwt-play-json" % JwtVersion,

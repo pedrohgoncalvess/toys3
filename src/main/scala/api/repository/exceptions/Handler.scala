@@ -8,10 +8,11 @@ import akka.http.scaladsl.model.StatusCodes
 
 import api.auth.exceptions.{ExpiredToken, NotValidToken}
 import api.bucket.exceptions.BucketNotExists
+import api.auth.exceptions.authExceptionHandler
 
 
 implicit def repositoryExceptionHandler: ExceptionHandler =
-  ExceptionHandler:
+  ExceptionHandler {
 
     case e: BucketNotExists =>
       extractUri { _ =>
@@ -37,3 +38,4 @@ implicit def repositoryExceptionHandler: ExceptionHandler =
       extractUri { _ =>
         complete(StatusCodes.Unauthorized, e.getMessage)
       }
+  }.withFallback(authExceptionHandler)

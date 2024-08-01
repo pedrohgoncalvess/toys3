@@ -1,10 +1,13 @@
 package pedro.goncalves
 package api.bucket
 
-import s3.organizer
-import s3.organizer.bucket.listBuckets
 
+import scala.collection.mutable
 import scala.concurrent.Future
+
+import s3.organizer
+import s3.organizer.implementations.listBuckets
+import api.bucket.models.{Buckets, Bucket}
 
 
 object BucketService:
@@ -12,6 +15,14 @@ object BucketService:
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def jsonBuckets: Future[Buckets] =
-    listBuckets.map { buckets =>
-      Buckets(buckets.map(bucket => Bucket(name=bucket.name)))
+    listBuckets.flatMap { buckets =>
+      val futureBuckets: Future[mutable.ArraySeq[Bucket]] = Future.sequence(
+        buckets.map { bucket =>
+          bucket._getID.map {
+            case Some(id) => Bucket(id=id, name=bucket.name)
+            case None => null
+          }
+        }
+      )
+      futureBuckets.map(bucketsSeq => Buckets(bucketsSeq.toSeq))
     }

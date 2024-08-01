@@ -2,37 +2,52 @@ package pedro.goncalves
 package s3.metadata
 
 
-import org.json4s.{JField, JString, JValue}
-import org.json4s.JsonAST.{JBool, JObject}
-import org.json4s.native.JsonMethods.{compact, parse, render}
 import java.io.File
 import java.io.FileWriter
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import java.util.UUID
+import java.time.LocalDateTime
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.Using
 import scala.util.{Failure, Success}
 
+import org.json4s.{JField, JString, JValue}
+import org.json4s.JsonAST.{JBool, JObject}
+import org.json4s.native.JsonMethods.{compact, parse, render}
+
 
 /**
- * An interface for implementing the creation, removal, and editing of object and organizer metadata files
+ * An interface for implementing the creation, removal, and editing of object and organizer metadata files.
  */
 trait Metadata:
   
   val metadataFileName:String = ".metadata.json"
   val metadataPath:String
 
-  def _content: Future[JObject]
-  
-  def _generate(implicit ex: ExecutionContext): Future[Unit] =
-    val content: Future[JObject] = this._content
-    content.map { value =>
+  def _content(externalMetadata: Option[JObject]): Future[JObject]
+
+  def _createDefaultMetadata(externalMetadata: Option[JObject])(implicit ex: ExecutionContext): Future[Unit] =
+    val content: Future[JObject] = this._content(externalMetadata)
+    content.flatMap { value =>
       this._create(value)
     }
-    
+
+
   def _exists: Boolean =
     File(metadataPath).exists
 
+
+  def _getID(implicit ex: ExecutionContext): Future[Option[String]] =
+    if (this._exists)
+      _read.map( content =>
+        content.get("id") match
+          case Some(JString(id)) => Some(id)
+          case _ => throw Exception("")
+      )
+    else
+      Future.failed(Exception("Metadata file of repository not exists."))
+
+      
   def _read(implicit ex: ExecutionContext): Future[Map[String, JValue]] =
     Future:
       val jsonStringOpr = Using(
@@ -51,8 +66,13 @@ trait Metadata:
       }
 
       jsonToMap
-      
-  
+
+
+  /**
+   *a function that rewrites the .metadata.json file with the new JObject provided.
+   * 
+   * @param content a JObject with the content to be written to the file
+   */
   def _create(content: JObject)(implicit ex: ExecutionContext): Future[Unit] =
     Future:
       val jsonString = compact(render(content))
@@ -63,7 +83,7 @@ trait Metadata:
   
   
   //TODO: Record of the user who deactivated the bucket
-  def _disability(implicit ex: ExecutionContext): Future[Unit] =
+  def _changeStatus(implicit ex: ExecutionContext, status:Boolean, userID:UUID): Future[Unit] =
     val jsonStringOpr = Using(Source.fromFile(metadataPath)) { source => source.mkString }
     val jsonString: String = jsonStringOpr match {
       case Success(content: String) => content
@@ -74,10 +94,16 @@ trait Metadata:
     val updatedJson = parsedJson match
       case JObject(fields) =>
         JObject(fields.map {
-          case (name, value) if name == "active" => (name, JBool(false))
+          case ("active", _) => ("active", JBool(status))
           case otherField => otherField
         })
-      case _ => throw new Exception
+      case _ => throw new Exception("Error updating metadata.json")
 
-    this._create(updatedJson)
-  
+    val finalJson = if (status)
+      updatedJson.merge(JObject("activated_at" -> JString(LocalDateTime.now.toString)))
+      updatedJson.merge(JObject("status_changed_by" -> JString(userID.toString)))
+    else
+      updatedJson.merge(JObject("deactivated_at" -> JString(LocalDateTime.now.toString)))
+      updatedJson.merge(JObject("status_changed_by" -> JString(userID.toString)))
+
+    this._create(finalJson)

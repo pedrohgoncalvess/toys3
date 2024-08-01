@@ -15,19 +15,16 @@ case class User(
                  created_at: Option[LocalDateTime]
                )
 
-object User {
-  def tupled: ((UUID, String, String, Option[String], Boolean, Option[LocalDateTime])) => User =
-    (User.apply _).tupled
-}
 
-object UserTable {
+object User:
+  def tupled: ((UUID, String, String, Option[String], Boolean, Option[LocalDateTime])) => User =
+    User.apply.tupled
+
+
+object UserTable:
 
   import slick.jdbc.SQLiteProfile.api._
-
-  implicit val uuidColumnType:BaseColumnType[UUID] = MappedColumnType.base[UUID, String](
-    _.toString,
-    UUID.fromString
-  )
+  import database.models.Utils._
 
   class UserTable(tag: Tag) extends Table[User](tag, "user") {
     def id = column[UUID]("id", O.PrimaryKey)
@@ -48,4 +45,3 @@ object UserTable {
   }
 
   lazy val userTable = TableQuery[UserTable]
-}

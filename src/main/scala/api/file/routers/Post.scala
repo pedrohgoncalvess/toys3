@@ -17,9 +17,8 @@ import api.file.exceptions.InconsistentRepositoryVersion
 import api.file.exceptions.InconsistentParameters
 import api.repository.exceptions.{RepositoryExists, RepositoryNotExists}
 import api.bucket.exceptions.BucketNotExists
-import s3.organizer.bucket.Bucket
-import s3.organizer.repository.Repository
 import s3.structured.CSVFile
+import pedro.goncalves.s3.organizer.implementations.{Bucket, Repository}
 
 
 class Post extends Directives:
@@ -70,9 +69,9 @@ class Post extends Directives:
 
               if (createIfNotExists)
 
-                onComplete(repository.create) {
+                onComplete(repository.create(Some(null))) {
                   case Success(_) =>
-                    onComplete(structuredFile._generate) {
+                    onComplete(structuredFile._createDefaultMetadata(Some(null))) {
                       case Success(_) => complete(StatusCodes.OK)
                       case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                     }
@@ -80,10 +79,10 @@ class Post extends Directives:
                 }
 
               else
-                onComplete(structuredFile._generate) {
+                onComplete(structuredFile._createDefaultMetadata(Some(null))) {
                   case Success(_) => complete(StatusCodes.OK)
                   case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
-                }
+            }
           }
         }
       }

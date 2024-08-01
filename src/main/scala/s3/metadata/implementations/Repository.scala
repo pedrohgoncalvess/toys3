@@ -1,17 +1,18 @@
 package pedro.goncalves
-package s3.organizer.repository
-
+package s3.metadata.implementations
 
 import s3.metadata
-import s3.organizer.bucket.Bucket
 import utils.configs.bucketsPath
+
 import org.json4s.JsonAST.JObject
 import org.json4s.{JBool, JField, JInt, JString}
+import pedro.goncalves.s3.organizer.implementations.Bucket
+
 import java.util.UUID
 import scala.concurrent.Future
 
 
-class Metadata(
+class Repository(
                 bucket:Bucket,
                 name:String,
                 versioned:Boolean
@@ -21,16 +22,17 @@ class Metadata(
   
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def _content: Future[JObject] =
+  override def _content(externalMetadata:Option[JObject]): Future[JObject] =
     Future:
-        JObject(
-          "id" -> JString(UUID.fromString.toString),
+        val defaultMetadata = JObject(
+          "id" -> JString(UUID.randomUUID.toString),
           "created_at" -> JString(java.time.LocalDateTime.now().toString),
           "created_by" -> JString("admin"),
           "objects" -> JInt(0),
           "active" -> JBool(true),
           "versioned" -> JBool(versioned)
         )
+        if externalMetadata.orNull != null then defaultMetadata.merge(externalMetadata.get) else defaultMetadata
 
 
 

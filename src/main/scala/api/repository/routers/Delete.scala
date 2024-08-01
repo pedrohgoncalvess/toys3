@@ -2,35 +2,34 @@ package pedro.goncalves
 package api.repository.routers
 
 
+import java.util.UUID
 import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes
 
 import api.auth.Service.endpointAuthenticator
 import api.repository.RepositoryJsonSupport
-import utils.configs.projectPath
-import api.repository.exceptions.{DelTypeNotExists, RepositoryNotExists}
+import api.repository.exceptions.DelTypeNotExists
 import api.bucket.exceptions.BucketNotExists
-import s3.organizer.bucket.{Bucket, listBuckets}
-import s3.organizer.repository.Repository
+import s3.organizer.implementations.{Bucket, Repository, listBuckets}
 
 
 class Delete extends Directives with RepositoryJsonSupport:
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  val rootDir: String = projectPath()
+  private val exc: ExecutionContext = global
 
   val route: Route = authenticateOAuth2(realm = "secure site", endpointAuthenticator) { auth =>
     authorize(true) { // TODO: Implement authorization logic    
       delete {
           parameters(
-            "bucket-name".as[String],
-            "repository-name".as[String],
+            "bucket-name".as[String],  //TODO: Change bucket name to bucket id
+            "repository-id".as[String],
             "type".as[String]
-          ) { (bucketName, repositoryName, delType) =>
-            if (delType != "permanent" && delType != "soft")
+          ) { (bucketName, repositoryID, delType) =>
+            if (delType != "permanent" && delType != "soft")  //TODO: Make this verification equals of delete bucket
               throw DelTypeNotExists(delType)
 
             onComplete(listBuckets) {
@@ -40,21 +39,18 @@ class Delete extends Directives with RepositoryJsonSupport:
                   throw BucketNotExists(bucketName)
                 val currentBucket = validBuckets.head
 
-                onComplete(currentBucket.listRepositories) {
-                  case Success(repositories) =>
-                    val validRepositories = repositories.filter(_.name == repositoryName)
+                onComplete(currentBucket.getRepositoryByID(UUID.fromString(repositoryID))) {
+                  case Success(Some(repository)) =>
 
-                    if (validRepositories.isEmpty)
-                      throw RepositoryNotExists(repositoryName)
-
-                    val currentRepository = validRepositories.head
-
-                    val (deleteOperation, typeOpr) = if delType == "permanent" then (currentRepository.exclude, "deleted") else (currentRepository._disability, "disabled")
+                    val (deleteOperation, typeOpr) =
+                      if delType == "permanent" then (repository.exclude, "deleted")
+                      else (repository._changeStatus(ex=exc, status=false, userID=UUID.fromString(auth)), "disabled")
 
                     onComplete(deleteOperation) {
-                      case Success(_) => complete(StatusCodes.OK, s"Repository $repositoryName has been $typeOpr.")
+                      case Success(_) => complete(StatusCodes.OK, s"Repository ${repository.name} has been $typeOpr.")
                       case Failure(exception) => complete(StatusCodes.InternalServerError, exception.getMessage)
                     }
+                  case Failure(exception) => complete(StatusCodes.NotFound)
                 }
             }
           }
