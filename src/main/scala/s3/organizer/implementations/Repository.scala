@@ -1,14 +1,17 @@
 package pedro.goncalves
 package s3.organizer.implementations
 
-import s3.metadata.implementations.Repository as RepositoryMetadata
-import s3.organizer.Organizer
-import s3.organizer.implementations.Bucket
-import utils.configs.bucketsPath
 
 import java.io.File
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import java.util.UUID
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.*
+
+import org.json4s.JsonAST.JObject
+
+import s3.metadata.implementations.Repository as RepositoryMetadata
+import s3.organizer.Organizer
+import utils.configs.bucketsPath
 
 
 case class Repository(
@@ -23,26 +26,40 @@ case class Repository(
   )
     with Organizer:
 
-
   import scala.concurrent.ExecutionContext.Implicits.global
   
   override val organizerPath = s"$bucketsPath\\${bucket.name}\\$name"
 
-  override def create: Future[Unit] =
-    Future:
-      bucket.addRepository(name).onComplete:
-        case Success(_) => 
-          File(organizerPath).mkdir()
-          _generate
-        case Failure(exception) => throw exception
+  def create(c: Option[JObject]): Future[Unit] =
+      File(organizerPath).mkdir()
+      val generateRepo = this._createDefaultMetadata(c)
+      Await.result(generateRepo, 5.seconds)
+
+      val repoID: Future[Option[String]] = this._getID
+      repoID.flatMap {
+        case Some(id) =>
+          bucket.addRepository(UUID.fromString(id))
+        case None =>
+          this.exclude
+          Future.failed(new Exception("Can't add repository ID in metadata.json of bucket."))
+        }
 
 
-  override def exclude: Future[Unit] =
-    Future {
-      val repository = File(organizerPath)
-      repository.listFiles().foreach(_.delete())
-      repository.delete()
+  def exclude: Future[Unit] =
+    val repository = File(organizerPath)
+
+    val repoID: Future[Option[String]] = this._getID
+    repoID.map{
+      case Some(id) =>
+        bucket.remRepository(UUID.fromString(id)).flatMap { _ =>
+          repository.listFiles().foreach(_.delete())
+          repository.delete()
+          Future.successful(())
+        }
+      case None =>
+        Future.failed(new Exception("Can't remove repository ID in metadata.json of bucket."))
     }
+
 
   def lastVersion: Float =
     val dirs = File(organizerPath).listFiles.filter(!_.isFile)
