@@ -1,18 +1,18 @@
 package pedro.goncalves
-package s3.organizer.bucket
+package s3.organizer.implementations
 
+
+import s3.metadata.implementations.Bucket as BucketMetadata
+import s3.organizer.Organizer
+import utils.configs.bucketsPath
+
+import org.json4s.*
+import org.json4s.native.JsonMethods.*
 
 import java.io.File
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-import org.json4s.native.JsonMethods.*
-import org.json4s.*
-
-import utils.configs.bucketsPath
-import s3.organizer.Organizer
-import s3.organizer.repository.Repository
-import s3.metadata.implementations.Bucket as BucketMetadata
+import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
@@ -22,18 +22,22 @@ import s3.metadata.implementations.Bucket as BucketMetadata
   *
   */
 case class Bucket (
-                     name:String
+                  name:String
                    ) 
   extends BucketMetadata(name) with Organizer:
 
   override val organizerPath: String = s"$bucketsPath\\$name"
   
-  def check: Boolean = File(organizerPath).exists()
+  def check: Boolean =
+    val metadataCheck = this._exists
+    File(organizerPath).exists() && metadataCheck
   
-  def create: Future[Unit] =
+  
+  def create(c:Option[JObject]): Future[Unit] =
     File(organizerPath).mkdir()
-    this._generate
+    this._createDefaultMetadata(c)
 
+  
   def exclude: Future[Unit] =
     Future {
       val bucket = File(organizerPath)
@@ -43,17 +47,27 @@ case class Bucket (
       bucket.delete()
     }
 
-  def listRepositories: Future[Array[Repository]] =
-    val metadataContent: Future[Map[String, JValue]] = _read
+  
+  def listAllRepositories: Future[Seq[Repository]] =
+    listIDRepositories.flatMap { ids =>
+      val repositoryFutures: Seq[Future[Option[Repository]]] = ids.map(getRepositoryByID)
+      Future.sequence(repositoryFutures).map(_.flatten)
+    }
 
-    metadataContent.map { content =>
-      content.get("repositories") match {
-        case Some(JArray(list)) => list.collect {
-          case JString(repo) => Repository(bucket=this, name=repo)
-        }.toArray
-        case _ => Array.empty[Repository]
+
+  def getRepositoryByID(repositoryID: UUID): Future[Option[Repository]] =
+    val bucket = new File(organizerPath)
+    val bucketDirs = bucket.listFiles().filter(dir => dir.isDirectory)
+    val bucketRepositories = bucketDirs.map(dir => Repository(bucket = this, name = dir.getName))
+
+    val matchingRepositories = bucketRepositories.map { repo =>
+      repo._getID.map {
+        case Some(id) if id == repositoryID.toString => Some(repo)
+        case _ => None
       }
     }
+
+    Future.sequence(matchingRepositories).map(_.flatten.headOption)
 
 
 /**
@@ -63,8 +77,7 @@ case class Bucket (
  * 
  * @return list of buckets objects
  */
-
 def listBuckets: Future[Array[Bucket]] =
   Future:
     val bucketsFile = File(bucketsPath).listFiles.filter(!_.isFile)
-    bucketsFile.map(file => Bucket(file.getName))
+    bucketsFile.map(file => Bucket(file.getName)).filter(_.check)
